@@ -134,12 +134,16 @@ var Mongoose = function(host) {
                 "data" : data,
                 "dataType" : "json",
                 "success" : function(msg) {
-                    if (handleError(msg)) {
+                    if (this.handleError(msg)) {
                         return;
                     }
 
                     callback(msg);
                 },
+                // TODO: better error handling
+                "error" : function(request, status, err) {
+                    this.handleError(err);
+                }
             });
     }
 
@@ -197,8 +201,8 @@ var Mongoose = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.setMongos = function(server, callback) {
-        this.post("/_mongos", "server="+server, callback);
+    this.setMongos = function(callback) {
+        this.post("/_mongos", "server="+this.mongos, callback);
     };
 
     /*
@@ -408,4 +412,4 @@ var MongooseCollection = function(db, collection) {
 
 Mongoose.mongos = { host : "localhost", port : 27017 };
 Mongoose.httpd = { host : "http://localhost", port : 27080 };
-
+Mongoose.defaultCallback = function(msg) { return; }

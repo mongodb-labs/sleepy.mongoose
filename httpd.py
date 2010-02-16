@@ -3,6 +3,8 @@ from handlers import MongoHandler
 
 import os.path
 import urlparse
+import json
+import cgi
 
 class MongoServer(BaseHTTPRequestHandler):
 
@@ -17,8 +19,29 @@ class MongoServer(BaseHTTPRequestHandler):
                   "css" : "text/css",
                   "js" : "text/js" }
 
-    def do_GET(self):        
-        (uri, q, args) = self.path.partition('?')
+    def call_handler(self, uri, args):
+        # execute something
+        func = getattr(MongoServer.mh, uri, None)
+        if callable(func):
+            self.send_response(200, 'OK')
+            self.send_header('Content-type', MongoServer.mimetypes['json'])
+            self.end_headers()
+
+            func(args, self.wfile.write)
+
+            return
+        else:
+            self.send_error(404, 'Script Not Found: '+uri)
+            return            
+        
+
+    # TODO: check for ..s
+    def process_uri(self, method):
+        if method == "GET":
+            (uri, q, args) = self.path.partition('?')
+        else:
+            uri = self.path
+
         uri = uri.strip('/')
 
         # default "/" to "/index.html"
@@ -29,8 +52,14 @@ class MongoServer(BaseHTTPRequestHandler):
         if len(dot) == 0:
             type = ""
 
+        args = cgi.FieldStorage(fp=self.rfile, headers=self.headers)
 
-        # TODO: check for ..s
+        return (uri, args, type)
+
+
+    def do_GET(self):        
+        (uri, args, type) = self.process_uri("GET")
+
  
         # serve up a plain file
         if len(type) != 0:
@@ -58,21 +87,13 @@ class MongoServer(BaseHTTPRequestHandler):
         else:
             args = {}
 
-        # execute something
-        func = getattr(MongoServer.mh, uri, None)
-        if callable(func):
-            self.send_response(200, 'OK')
-            self.send_header('Content-type', MongoServer.mimetypes['json'])
-            self.end_headers()
-
-            func(args, self.wfile.write)
-
-            return
-        else:
-            self.send_error(404, 'Script Not Found: '+uri)
-            return            
-        
+        self.call_handler(uri, args)
         #self.wfile.write( self.path )
+
+    def do_POST(self):
+        (uri, args, type) = self.process_uri("POST")
+        self.call_handler(uri, args)
+
 
     @staticmethod
     def serve_forever(port):
@@ -83,7 +104,14 @@ class MongoServer(BaseHTTPRequestHandler):
 
         MongoServer.mh = MongoHandler()
 
-        HTTPServer(('', port), MongoServer).serve_forever()
+        server = HTTPServer(('', port), MongoServer)
+
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print "\nShutting down the server..."
+            server.socket.close()
+            print "\nGood bye!\n"
 
 
 if __name__ == "__main__":

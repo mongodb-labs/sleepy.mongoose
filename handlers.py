@@ -41,7 +41,7 @@ class MongoHandler:
         return (host, port)
 
 
-    def _run_command(self, server, cmd, out):
+    def _cmd(self, server, cmd, out):
         connection = self._get_connection(server)
         if connection == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to %s"}' % server)
@@ -50,14 +50,14 @@ class MongoHandler:
         return connection.admin._command(cmd)
         
 
-    def set_mongos(self, args, out):
-        (host, port) = self._get_host_and_port(args['server'][0])
+    def _mongos(self, args, out):
+        (host, port) = self._get_host_and_port(args.getvalue('server'))
 
         conn = self._get_connection('mongos', host, port)
         if conn != None:
             out('{"ok" : 1, "host" : "%s", "port" : %d}' % (host, port))
         else:
-            out('{"error" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
+            out('{"errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
 
     def get_config(self, args, out):
         netstat = self._run_command('mongos', {'netstat' : 1}, out)
