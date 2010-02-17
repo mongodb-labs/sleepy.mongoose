@@ -41,6 +41,9 @@ class MongoServer(BaseHTTPRequestHandler):
             (uri, q, args) = self.path.partition('?')
         else:
             uri = self.path
+            args = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
+                                    environ={'REQUEST_METHOD':'POST',
+                                             'CONTENT_TYPE':self.headers['Content-Type']})
 
         uri = uri.strip('/')
 
@@ -51,8 +54,6 @@ class MongoServer(BaseHTTPRequestHandler):
         (temp, dot, type) = uri.rpartition('.')
         if len(dot) == 0:
             type = ""
-
-        args = cgi.FieldStorage(fp=self.rfile, headers=self.headers)
 
         return (uri, args, type)
 

@@ -89,24 +89,6 @@ var Mongoose = function(host) {
         return bytes + " " + byte_units[size];
     }
 
-    /*
-     * Handles errors in database responses.
-     * 
-     * @returns an object.  If the "ok" field is 0, there will be a "msg" field 
-     * that will describe the error that occured.  If the command succeeded (or
-     * appeared to) the "ok" field will be 1.
-     * @type Object
-     */
-    this.handleError = function(msg) {
-        if (!msg) {
-            return {"ok" : 0, "msg" : "Something went very wrong. You'll probably need to restart the server."};
-        }
-        else if (!msg['ok']) {
-            return {"ok" : 0, "msg" : msg['msg'] ? msg['msg'] : msg['errmsg']};
-        }
-        return {"ok" : 1};
-    };
-
 
     /*
      * This creates an AJAX request.  It sends an asynchronous request to
@@ -134,7 +116,8 @@ var Mongoose = function(host) {
                 "data" : data,
                 "dataType" : "json",
                 "success" : function(msg) {
-                    if (this.handleError(msg)) {
+                    var result = Mongoose.handleError(msg);
+                    if (result.ok == 0) {
                         return;
                     }
 
@@ -142,7 +125,7 @@ var Mongoose = function(host) {
                 },
                 // TODO: better error handling
                 "error" : function(request, status, err) {
-                    this.handleError(err);
+                    Mongoose.handleError(err);
                 }
             });
     }
@@ -235,7 +218,7 @@ var Mongoose = function(host) {
  * A MongooseShard is an individual shard in the cluster.  It must be added to 
  * the cluster manually by calling "add".
  */
-var MongooseShard = function(mongoose, server) {
+Mongoose.Shard = function(mongoose, server) {
 
     this.connection = mongoose;
     this.server = server;
@@ -282,13 +265,13 @@ var MongooseShard = function(mongoose, server) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.getDBs = function(callback) {
+    this.getDatabases = function(callback) {
         this.connection.get("/_dbs", "server="+this.server, callback);
     };
 
 }
 
-var MongooseDB = function(mongoose, db) {
+Mongoose.Database = function(mongoose, db) {
     this.connection = mongoose;
     this.db = db + "";
     
@@ -319,7 +302,7 @@ var MongooseDB = function(mongoose, db) {
     }
 };
 
-var MongooseCollection = function(db, collection) {
+Mongoose.Collection = function(db, collection) {
     this.connection = db.connection;
     this.ns = db.db + "." + collection;
 
@@ -413,3 +396,21 @@ var MongooseCollection = function(db, collection) {
 Mongoose.mongos = { host : "localhost", port : 27017 };
 Mongoose.httpd = { host : "http://localhost", port : 27080 };
 Mongoose.defaultCallback = function(msg) { return; }
+
+/*
+ * Handles errors in database responses.
+ * 
+ * @returns an object.  If the "ok" field is 0, there will be a "msg" field 
+ * that will describe the error that occured.  If the command succeeded (or
+ * appeared to) the "ok" field will be 1.
+ * @type Object
+ */
+Mongoose.handleError = function(msg) {
+    if (!msg) {
+        return {"ok" : 0, "msg" : "Something went very wrong. You'll probably need to restart the server."};
+    }
+    else if (!msg['ok']) {
+        return {"ok" : 0, "msg" : msg['msg'] ? msg['msg'] : msg['errmsg']};
+    }
+    return {"ok" : 1};
+};
