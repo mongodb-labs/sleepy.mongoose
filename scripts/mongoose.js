@@ -172,7 +172,7 @@ var Mongoose = function(host) {
      * @throws Exception if callback is not a function
      */
     this.command = function(obj, callback) {
-        this.post("/admin/_cmd", "obj="+$.toJSON(obj), callback);
+        this.post("/_cmd", "obj="+escape($.toJSON(obj)), callback);
     }
 
     /*
@@ -217,6 +217,27 @@ var Mongoose = function(host) {
 /*
  * A MongooseShard is an individual shard in the cluster.  It must be added to 
  * the cluster manually by calling "add".
+ *
+ * So, here's the workflow:
+ * <ol>
+ *  <li>
+ *   You have an existing shard server (mongos) and config server, plus zero or
+ *   more existing shards.  You have an instance of Mongoose associated with the
+ *   mongos running.
+ *  </li>
+ *  <li>
+ *   You start up a new shard.  No one knows that this shard even exists yet.
+ *   Say it is listening for connections at localhost:12345.
+ *  </li>
+ *  <li>
+ *   You create a Mongoose.Shard instance for this shard, passing it the 
+ *   Mongoose instance and the address of the shard ("localhost:12345").
+ *  </li>
+ *  <li>
+ *   Finally, we let mongos and the config server know about this new shard by 
+ *   calling the add method on this shard.
+ *  </li>
+ * </ol>
  */
 Mongoose.Shard = function(mongoose, server) {
 
@@ -226,6 +247,19 @@ Mongoose.Shard = function(mongoose, server) {
     /*
      * Add this shard.
      *
+     * The callback will receive a response of the form:
+     * <pre>
+     * { "added" : "localhost:10000", "ok" : 1 }
+     * </pre>
+     *
+     * If you do not specify local and the shard is on localhost, you will get:
+     * <pre>
+     * {
+     *     "ok" : 0,
+     *     "errmsg" : "can't use localhost as a shard since all shards need to communicate.  allowLocal to override for testing"
+     * }
+     * </pre>
+     *
      * @param {boolean} [local] optional parameter specifying if the shard is on localhost
      * @param {function} [callback] optional function to call when a response is
      * received.
@@ -234,7 +268,8 @@ Mongoose.Shard = function(mongoose, server) {
      */
     this.add = function(local, callback) {
         local = local ? true : false;
-        this.connection.command({"addshard" : this.server, "allowLocal" : local}, callback);
+        this.connection.command({'$pyhint' : [{"key" : "addshard", "value" : this.server}, 
+                                              {"key" : "allowLocal", "value" : local}]}, callback);
     };
 
     /*
@@ -248,12 +283,56 @@ Mongoose.Shard = function(mongoose, server) {
      * Checks the status of this server, including uptime, memory usage, and 
      * activity.
      *
+     * The callback will receive a response of the form:
+     * <pre>
+     * {
+     *     "uptime" : 52358,
+     *     "globalLock" : {
+     *          "totalTime" : 52358205700,
+     *          "lockTime" : 1455600,
+     *          "ratio" : 0.000027800799904034907
+     *     },
+     *     "mem" : {
+     *          "resident" : 22,
+     *          "virtual" : 145,
+     *          "supported" : true,
+     *          "mapped" : 80
+     *     },
+     *     "connections" : {
+     *          "current" : 2,
+     *          "available" : 19998
+     *     },
+     *     "extra_info" : {
+     *          "note" : "fields vary by platform",
+     *          "heap_usage_bytes" : 1874632,
+     *          "page_faults" : 1
+     *     },
+     *     "indexCounters" : {
+     *          "btree" : {
+     *              "accesses" : 1,
+     *              "hits" : 1,
+     *              "misses" : 0,
+     *              "resets" : 0,
+     *              "missRatio" : 0
+     *          }
+     *     },
+     *     "opcounters" : {
+     *          "insert" : 3,
+     *          "query" : 15,
+     *          "update" : 0,
+     *          "delete" : 0,
+     *          "getmore" : 0
+     *     },
+     *     "ok" : 1
+     * }
+     * </pre>
+     *
      * @param {function} callback optional function to call when a response is
      * received.
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.getStatus = function(callback) {
+    this.status = function(callback) {
         this.connection.get("/_status", "server="+this.server, callback);
     };
 
@@ -298,7 +377,8 @@ Mongoose.Database = function(mongoose, db) {
      * @throws Exception if callback is not a function
      */
     this.move = function(to, callback) {
-        this.connection.post("/move_db", "moveprimary="+this.db+"&to="+to, callback);
+        this.connection.command({'$pyhint' : [{"key" : "moveprimary", "value" : this.db},
+                                              {"key" : "to", "value" : to}]}, callback);
     }
 };
 
@@ -319,7 +399,9 @@ Mongoose.Collection = function(db, collection) {
      */
     this.shard = function(key, unique, callback) {
         unique = unique ? true : false;
-        this.post({"shardcollection" : this.ns, "key" : key, "unique" : unique}, callback);
+        this.connection.command({'$pyhint' : [{"key" : "shardcollection", "value" : this.ns},
+                                              {"key" : "key", "value" : key}, 
+                                              {"key" : "unique", "value" : unique}]}, callback);
     };
 
     /*
@@ -336,13 +418,13 @@ Mongoose.Collection = function(db, collection) {
      */
     this.split = function(criteria, callback) {
 
-        var cmd = {"shard" : this.ns};
+        var cmd = {'$pyhint' : [{"key" : "shard", "value" : this.ns}]};
 
         if (criteria.find != null) {
-            cmd.find = criteria.find;
+            cmd.$pyhint[1] = {"key" : "find", "value" : criteria.find};
         }
         else if (criteria.middle != null) {
-            cmd.middle = criteria.middle;
+            cmd.$pyhint[1] = {"key" : "middle", "value" : criteria.middle};
         }
         else {
             throw "no find or middle object given";
@@ -366,15 +448,15 @@ Mongoose.Collection = function(db, collection) {
      * or callback is not a function
      */
     this.move = function(criteria, to, callback) {
-        var cmd = {"movechunk" : this.ns};
+        var cmd = {'$pyhint' : [{"movechunk" : this.ns}]};
 
         if (criteria.find != null) {
-            cmd.find = criteria.find;
+            cmd.$pyhint.push({"key" : "find", "value" : criteria.find});
         }
         else {
             throw "no find object given";
         }
-        cmd.to = to + "";
+        cmd.$pyhint.push({"key" : "to", "value" : to + ""});
 
         this.connection.command(cmd, callback);
     };
