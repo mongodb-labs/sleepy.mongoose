@@ -1,6 +1,6 @@
 from pymongo import Connection, json_util
 from pymongo.son import SON
-from pymongo.errors import ConnectionFailure
+from pymongo.errors import ConnectionFailure, OperationFailure
 
 import re
 import json
@@ -57,8 +57,12 @@ class MongoHandler:
                 temp[pair['key']] = pair['value']
             cmd = temp
 
-        result = connection.admin._command(cmd)
-        out(json.dumps(result, default=json_util.default))
+        try:
+            result = connection.admin._command(cmd)
+            out(json.dumps(result, default=json_util.default))
+        except OperationFailure as err:
+            out('{"ok" : 0, "msg" : "operation failed but you\'ll never know why."}')
+
         
 
     def _mongos(self, args, out):

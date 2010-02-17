@@ -390,7 +390,7 @@ Mongoose.Collection = function(db, collection) {
      * Enables sharding on this collection.  The collection's database must have 
      * sharding enabled before it can be enabled on the collection.
      *
-     * @param {object} key the field on which to shard
+     * @param {object} key the field or fields on which to shard, e.g., {"x" : 1}
      * @param {boolean} [unique] if the shard key should be unique
      * @param {function} [callback] optional function to call when a response is
      * received.

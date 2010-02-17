@@ -72,19 +72,21 @@ m.setMongos(testSetMongos);
 var testGetConfig = function(msg) {
     test("get config", function() {
             expect(2);
-
+            
             equals(msg.configserver, "localhost:20000");
             equals(msg.isdbgrid, 1);
+            
         });
 };
 m.getConfig(testGetConfig);
+
 
 var addShards = true;
 
 var testGetShards0 = function(msg) {
     test("get shards 0", function() {
             expect(1);
-
+            
             // no shards yet
             ok(msg.shards.constructor == Array);
             if (msg.shards.length == 2) {
@@ -93,6 +95,10 @@ var testGetShards0 = function(msg) {
         });
 };
 m.getShards(testGetShards0);
+
+
+
+
 
 module("Mongoose Shards");
 
@@ -198,7 +204,7 @@ var testMoveDB = function(msg) {
 }
 
 var testGetDBs2 = function(msg) {
-    test("get dbs", function() {
+    test("get dbs 2", function() {
             expect(2);
 
             equals(msg.dbs.constructor, Array);
@@ -222,6 +228,7 @@ shard1.getDatabases(testGetDBs2);
 
 
 
+
 module("Mongoose Collections");
 
 c = new Mongoose.Collection(db, "bar");
@@ -231,4 +238,34 @@ test("instance vars", function() {
         equals(c.ns, "foo.bar");
     });
 
+var testShardColl = function(msg) {
+    test("shard collection", function() {
 
+        });
+};
+c.shard({"_id" : 1}, true, testShardColl);
+c.shard({"x" : 1}, false, testShardColl);
+
+var testSplitChunk = function(msg) {
+    test("split chunk", function() {
+
+        });
+}
+c.split({"find" : {"x" : 1}}, testSplitChunk);
+
+var testMoveChunk = function(msg) {
+    test("move chunk", function() {
+
+        });
+}
+
+
+var testGetVersion = function(msg) {
+    test("version", function() {
+            expect(0);
+
+        });
+}
+c.version(testGetVersion);
+
+Mongoose.debug = false;
