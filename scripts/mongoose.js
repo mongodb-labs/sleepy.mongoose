@@ -15,14 +15,14 @@
  *
  */
 
-/*
+/**
  * This is the JavaScript sharding API
  *
  * It can be used by web interfaces to easily interact with the sharding 
  * backend.
  */
 
-/*
+/**
  * Creates a new instance connected to a mongos.
  * @constructor
  * @param {String} host the hostname and optionally port number of the mongos.
@@ -33,23 +33,23 @@ var Mongoose = function(host) {
     this.mongos = host ? host : (Mongoose.mongos.host + ":" + Mongoose.mongos.port);
     this.httpd = Mongoose.httpd.host + ":" + Mongoose.httpd.port;
 
-    /*
+    /**
      * Number of seconds/time unit
      * [sec/year, sec/month, sec/day, sec/hour, sec/minute]
      */
     var time_vals = [31104000, 2592000, 86400, 3600, 60];
 
-    /*
+    /**
      * Pretty names for time units
      */
     var time_units = ['year', 'month', 'day', 'hour', 'minute'];
 
-    /*
+    /**
      * Pretty names for byte units
      */
     var byte_units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'];
 
-    /*
+    /**
      * Turn number of seconds into a "pretty" time representation: years, 
      * months, days, etc.
      *
@@ -75,7 +75,7 @@ var Mongoose = function(host) {
         return str;
     };
 
-    /*
+    /**
      * Get the "pretty' size.
      * Uses the fact that sizes are measured base-10 as a hack.
      *
@@ -90,7 +90,7 @@ var Mongoose = function(host) {
     }
 
 
-    /*
+    /**
      * This creates an AJAX request.  It sends an asynchronous request to
      * the server and calls an optional callback when a response is received, if
      * no error occured.
@@ -130,7 +130,7 @@ var Mongoose = function(host) {
             });
     }
 
-    /*
+    /**
      * This creates a POST AJAX request.  It sends an asynchronous request to
      * the server and calls an optional callback when a response is received, if
      * no error occured.
@@ -146,7 +146,7 @@ var Mongoose = function(host) {
         this._ajax("POST", uri, data, callback);
     };
 
-    /*
+    /**
      * This creates a GET AJAX request.  It sends an asynchronous request to
      * the server and calls an optional callback when a response is received, if
      * no error occured.
@@ -162,7 +162,7 @@ var Mongoose = function(host) {
         this._ajax("GET", uri, data, callback);
     };
 
-    /*
+    /**
      * Execute a database command.
      *
      * @param {object} obj the command to execute
@@ -175,7 +175,7 @@ var Mongoose = function(host) {
         this.post("/_cmd", "obj="+escape($.toJSON(obj)), callback);
     }
 
-    /*
+    /**
      * Sets the mongos to use.
      *
      * @param {String} server the mongos server to use
@@ -188,7 +188,7 @@ var Mongoose = function(host) {
         this.post("/_mongos", "server="+this.mongos, callback);
     };
 
-    /*
+    /**
      * Get the configuration server.
      *
      * @param {function} callback optional function to call when a response is
@@ -200,7 +200,7 @@ var Mongoose = function(host) {
         this.command({"netstat" : 1}, callback);
     };
 
-    /*
+    /**
      * Get a list of shards.
      *
      * @param {function} callback optional function to call when a response is
@@ -214,7 +214,7 @@ var Mongoose = function(host) {
 }
 
 
-/*
+/**
  * A MongooseShard is an individual shard in the cluster.  It must be added to 
  * the cluster manually by calling "add".
  *
@@ -238,13 +238,15 @@ var Mongoose = function(host) {
  *   calling the add method on this shard.
  *  </li>
  * </ol>
+ *
+ * @constructor
  */
 Mongoose.Shard = function(mongoose, server) {
 
     this.connection = mongoose;
     this.server = server;
 
-    /*
+    /**
      * Add this shard.
      *
      * The callback will receive a response of the form:
@@ -272,14 +274,14 @@ Mongoose.Shard = function(mongoose, server) {
                                               {"key" : "allowLocal", "value" : local}]}, callback);
     };
 
-    /*
+    /**
      * Not yet implemented (in the db).
      */
     this.remove = function() {
         // TODO
     }
 
-    /*
+    /**
      * Checks the status of this server, including uptime, memory usage, and 
      * activity.
      *
@@ -336,7 +338,7 @@ Mongoose.Shard = function(mongoose, server) {
         this.connection.get("/_status", "server="+this.server, callback);
     };
 
-    /*
+    /**
      * Get a list of databases on this shard.
      *
      * @param {function} callback optional function to call when a response is
@@ -350,11 +352,16 @@ Mongoose.Shard = function(mongoose, server) {
 
 }
 
+/**
+ * A sharded database.
+ *
+ * @constructor
+ */
 Mongoose.Database = function(mongoose, db) {
     this.connection = mongoose;
     this.db = db + "";
     
-    /*
+    /**
      * Enables sharding on a database.
      *
      * @param {String} db the database to enable sharding on
@@ -367,7 +374,7 @@ Mongoose.Database = function(mongoose, db) {
         this.connection.command({"enablesharding" : this.db}, callback);
     };
 
-    /*
+    /**
      * Move the database to a different shard.
      *
      * @param {String} to the server to move the database to
@@ -382,11 +389,17 @@ Mongoose.Database = function(mongoose, db) {
     }
 };
 
+/**
+ * A sharded collection.  Used to manipulate individual chunks (pieces of a 
+ * collection).
+ *
+ * @constructor
+ */
 Mongoose.Collection = function(db, collection) {
     this.connection = db.connection;
     this.ns = db.db + "." + collection;
 
-    /*
+    /**
      * Enables sharding on this collection.  The collection's database must have 
      * sharding enabled before it can be enabled on the collection.
      *
@@ -404,7 +417,7 @@ Mongoose.Collection = function(db, collection) {
                                               {"key" : "unique", "value" : unique}]}, callback);
     };
 
-    /*
+    /**
      * Split this collection into two chunks on a single shard.  Use 
      * MongooseCollection.move to move one of the chunks to a new shard.
      *
@@ -433,7 +446,7 @@ Mongoose.Collection = function(db, collection) {
         this.connection.command(cmd, callback);
     };
 
-    /*
+    /**
      * Move a chunk of this collection to a new shard.  Use the criteria 
      * parameter to find the chunk to move.
      *
@@ -461,7 +474,7 @@ Mongoose.Collection = function(db, collection) {
         this.connection.command(cmd, callback);
     };
 
-    /*
+    /**
      * Get the version of sharding being used.
      *
      * @param {function} callback optional function to call when a response is
@@ -479,7 +492,7 @@ Mongoose.mongos = { host : "localhost", port : 27017 };
 Mongoose.httpd = { host : "http://localhost", port : 27080 };
 Mongoose.defaultCallback = function(msg) { return; }
 
-/*
+/**
  * Handles errors in database responses.
  * 
  * @returns an object.  If the "ok" field is 0, there will be a "msg" field 

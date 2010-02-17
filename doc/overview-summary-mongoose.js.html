@@ -1,0 +1,697 @@
+<!doctype html public "-//W3C//DTD HTML 4.0 Frameset//EN""http://www.w3.org/TR/REC-html40/frameset.dtd">
+<html>
+<head>
+<title>
+ Overview
+</title>
+<link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+<script>
+function asd() {
+	
+		parent.document.title="mongoose.js Overview";
+	
+}
+</script>
+</head>
+<body bgcolor="white" onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<table border="0" width="100%" cellpadding="1" cellspacing="0">
+<tr>
+<td colspan=2 bgcolor="#EEEEFF" class="NavBarCell1">
+<a name="navbar_top_firstrow"><!-- --></a>
+<table border="0" cellpadding="0" cellspacing="3">
+  <tr align="center" valign="top">
+  
+  
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-summary.html"><font class="NavBarFont1"><b>Overview</b></font></a>&nbsp;</td>
+  <td bgcolor="#FFFFFF" class="NavBarCell1Rev">	&nbsp;<font class="NavBarFont1Rev"><b>File</b></font>&nbsp;</td>
+  
+
+  <td bgcolor="#FFFFFF" class="NavBarCell1"> 	<font class="NavBarFont1">Class</font>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-tree.html"><font class="NavBarFont1"><b>Tree</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="index-all.html"--><font class="NavBarFont1"><b>Index</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="help-doc.html"><font class="NavBarFont1"><b>Help</b></font></a>&nbsp;</td>
+  </tr>
+</table>
+</td>
+<td bgcolor="#EEEEFF" align="right" valign="top">
+<em>
+<b></b></em>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+&nbsp;PREV&nbsp;
+&nbsp;NEXT</font></td>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+  <a href="index.html" target="_top"><b>FRAMES</b></a>  &nbsp;
+&nbsp;<a href="overview-summary.html" target="_top"><b>NO FRAMES</b></a>
+&nbsp;&nbsp;
+<script>
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="allclasses-noframe.html" TARGET=""><B>All Classes</B></A>');
+  }
+  //-->
+</script>
+<noscript>
+<a href="allclasses-noframe.html" target=""><b>All Classes</b></a>
+</noscript>
+</font></td>
+</tr>
+</table>
+<!-- =========== END OF NAVBAR =========== -->
+
+<hr>
+<center>
+	
+	   <h2>mongoose.js</h2>
+	
+</center>
+
+	
+
+
+<h4>Summary</h4>
+<p>
+	
+		No overview generated for 'mongoose.js'<BR/><BR/>
+	
+</p>
+
+<hr>
+
+
+    <table border="1" cellpadding="3" cellspacing="0" width="100%">
+    <tr bgcolor="#CCCCFF" class="TableHeadingColor">
+    <td colspan=2><font size="+2">
+    
+        <b>Class Summary</b>
+    
+    </font></td>
+    </tr>
+    
+    <tr bgcolor="white" class="TableRowColor">
+    <td width="15%"><b><a href="Mongoose.html">Mongoose</a></b></td>
+    <td>&nbsp;</td>
+    </tr>
+    
+    <tr bgcolor="white" class="TableRowColor">
+    <td width="15%"><b><a href="Mongoose/Collection.html">Mongoose.Collection</a></b></td>
+    <td>&nbsp;</td>
+    </tr>
+    
+    <tr bgcolor="white" class="TableRowColor">
+    <td width="15%"><b><a href="Mongoose/Database.html">Mongoose.Database</a></b></td>
+    <td>&nbsp;</td>
+    </tr>
+    
+    <tr bgcolor="white" class="TableRowColor">
+    <td width="15%"><b><a href="Mongoose/Shard.html">Mongoose.Shard</a></b></td>
+    <td>&nbsp;</td>
+    </tr>
+    
+    </table>
+    <hr/> 
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+
+<!-- ========== END METHOD SUMMARY =========== -->
+
+
+        <pre class="sourceview"><span class="comment">/*
+ * Copyright 2010 10gen, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */</span>
+
+<span class="comment">/**
+ * This is the JavaScript sharding API
+ *
+ * It can be used by web interfaces to easily interact with the sharding 
+ * backend.
+ */</span>
+
+<span class="comment">/**
+ * Creates a new instance connected to a mongos.
+ * <span class="attrib">@constructor</span>
+ * <span class="attrib">@param</span> {String} host the hostname and optionally port number of the mongos.
+ * If none is given, it will default to 
+ * &lt;i&gt;mongoose.host&lt;/i&gt;:&lt;i&gt;mongoose.port&lt;/i&gt;.
+ */</span>
+var Mongoose = <span class="reserved">function</span>(host) {
+    <span class="reserved">this</span>.mongos = host ? host : (Mongoose.mongos.host + <span class="literal">":"</span> + Mongoose.mongos.port);
+    <span class="reserved">this</span>.httpd = Mongoose.httpd.host + <span class="literal">":"</span> + Mongoose.httpd.port;
+
+    <span class="comment">/**
+     * Number of seconds/time unit
+     * [sec/year, sec/month, sec/day, sec/hour, sec/minute]
+     */</span>
+    var time_vals = [31104000, 2592000, 86400, 3600, 60];
+
+    <span class="comment">/**
+     * Pretty names for time units
+     */</span>
+    var time_units = [<span class="literal">'year'</span>, <span class="literal">'month'</span>, <span class="literal">'day'</span>, <span class="literal">'hour'</span>, <span class="literal">'minute'</span>];
+
+    <span class="comment">/**
+     * Pretty names for byte units
+     */</span>
+    var byte_units = [<span class="literal">'bytes'</span>, <span class="literal">'kB'</span>, <span class="literal">'MB'</span>, <span class="literal">'GB'</span>, <span class="literal">'TB'</span>, <span class="literal">'PB'</span>];
+
+    <span class="comment">/**
+     * Turn number of seconds into a "pretty" time representation: years, 
+     * months, days, etc.
+     *
+     * <span class="attrib">@param</span> {Number} time number of seconds
+     * <span class="attrib">@return</span> the prettified time
+     * <span class="attrib">@type</span> String
+     */</span>
+    get_time_format = <span class="reserved">function</span>(time) {
+        str = <span class="literal">""</span>;
+
+        remaining = time;
+        <span class="reserved">for</span> (var i in time_vals) {
+            <span class="reserved">if</span> ((num = Math.floor(remaining/time_vals[i])) &gt; 0) {
+                str += num + <span class="literal">" "</span> + time_units[i] + (num == 1 ? <span class="literal">""</span> : <span class="literal">"s"</span>) + <span class="literal">" "</span>;
+                remaining = remaining - (time_vals[i] * num);
+            }
+        }
+
+        <span class="reserved">if</span> (remaining &gt; 0) {
+            str += remaining + <span class="literal">" seconds"</span>;
+        }
+
+        <span class="reserved">return</span> str;
+    };
+
+    <span class="comment">/**
+     * Get the "pretty' size.
+     * Uses the fact that sizes are measured base-10 as a hack.
+     *
+     * <span class="attrib">@param</span> {Number} bytes size in bytes
+     * <span class="attrib">@returns</span> prettified size
+     * <span class="attrib">@type</span> String
+     */</span>
+    var get_byte_format = <span class="reserved">function</span>(bytes) {
+        var size = Math.floor(((bytes+<span class="literal">""</span>).length-1)/3);
+        bytes = bytes/Math.pow(1000, size);
+        <span class="reserved">return</span> bytes + <span class="literal">" "</span> + byte_units[size];
+    }
+
+
+    <span class="comment">/**
+     * This creates an AJAX request.  It sends an asynchronous request to
+     * the server and calls an optional callback when a response is received, if
+     * no error occured.
+     *
+     * <span class="attrib">@param</span> {String} uri the address to send the request
+     * <span class="attrib">@param</span> {String} data key/value pairs to send
+     * <span class="attrib">@param</span> {callback} function a function to call when the response is 
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>._ajax = <span class="reserved">function</span>(action, uri, data, callback) {
+        <span class="reserved">if</span> (callback === undefined) {
+            callback = Mongoose.defaultCallback;
+        }
+        <span class="reserved">else</span> <span class="reserved">if</span> (typeof callback != <span class="literal">"function"</span>) {
+            throw <span class="literal">"callback is not a function"</span>;
+        }
+
+        $.ajax({
+                <span class="literal">"type"</span> : action,
+                <span class="literal">"url"</span> : <span class="reserved">this</span>.httpd+uri,
+                <span class="literal">"data"</span> : data,
+                <span class="literal">"dataType"</span> : <span class="literal">"json"</span>,
+                <span class="literal">"success"</span> : <span class="reserved">function</span>(msg) {
+                    var result = Mongoose.handleError(msg);
+                    <span class="reserved">if</span> (result.ok == 0) {
+                        <span class="reserved">return</span>;
+                    }
+
+                    callback(msg);
+                },
+                <span class="comment">// TODO: better error handling</span>
+                <span class="literal">"error"</span> : <span class="reserved">function</span>(request, status, err) {
+                    Mongoose.handleError(err);
+                }
+            });
+    }
+
+    <span class="comment">/**
+     * This creates a POST AJAX request.  It sends an asynchronous request to
+     * the server and calls an optional callback when a response is received, if
+     * no error occured.
+     *
+     * <span class="attrib">@param</span> {String} uri the address to send the request
+     * <span class="attrib">@param</span> {String} data key/value pairs to send
+     * <span class="attrib">@param</span> {callback} function a function to call when the response is 
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.post = <span class="reserved">function</span>(uri, data, callback) {
+        <span class="reserved">this</span>._ajax(<span class="literal">"POST"</span>, uri, data, callback);
+    };
+
+    <span class="comment">/**
+     * This creates a GET AJAX request.  It sends an asynchronous request to
+     * the server and calls an optional callback when a response is received, if
+     * no error occured.
+     *
+     * <span class="attrib">@param</span> {String} uri the address to send the request
+     * <span class="attrib">@param</span> {String} data key/value pairs to send
+     * <span class="attrib">@param</span> {callback} function a function to call when the response is 
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.get = <span class="reserved">function</span>(uri, data, callback) {
+        <span class="reserved">this</span>._ajax(<span class="literal">"GET"</span>, uri, data, callback);
+    };
+
+    <span class="comment">/**
+     * Execute a database command.
+     *
+     * <span class="attrib">@param</span> {object} obj the command to execute
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.command = <span class="reserved">function</span>(obj, callback) {
+        <span class="reserved">this</span>.post(<span class="literal">"/_cmd"</span>, <span class="literal">"obj="</span>+escape($.toJSON(obj)), callback);
+    }
+
+    <span class="comment">/**
+     * Sets the mongos to use.
+     *
+     * <span class="attrib">@param</span> {String} server the mongos server to use
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.setMongos = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.post(<span class="literal">"/_mongos"</span>, <span class="literal">"server="</span>+<span class="reserved">this</span>.mongos, callback);
+    };
+
+    <span class="comment">/**
+     * Get the configuration server.
+     *
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.getConfig = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.command({<span class="literal">"netstat"</span> : 1}, callback);
+    };
+
+    <span class="comment">/**
+     * Get a list of shards.
+     *
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.getShards = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.command({<span class="literal">"listshards"</span> : 1}, callback);
+    };
+}
+
+
+<span class="comment">/**
+ * A MongooseShard is an individual shard in the cluster.  It must be added to 
+ * the cluster manually by calling "add".
+ *
+ * So, here's the workflow:
+ * &lt;ol&gt;
+ *  &lt;li&gt;
+ *   You have an existing shard server (mongos) and config server, plus zero or
+ *   more existing shards.  You have an instance of Mongoose associated with the
+ *   mongos running.
+ *  &lt;/li&gt;
+ *  &lt;li&gt;
+ *   You start up a new shard.  No one knows that this shard even exists yet.
+ *   Say it is listening for connections at localhost:12345.
+ *  &lt;/li&gt;
+ *  &lt;li&gt;
+ *   You create a Mongoose.Shard instance for this shard, passing it the 
+ *   Mongoose instance and the address of the shard ("localhost:12345").
+ *  &lt;/li&gt;
+ *  &lt;li&gt;
+ *   Finally, we let mongos and the config server know about this new shard by 
+ *   calling the add method on this shard.
+ *  &lt;/li&gt;
+ * &lt;/ol&gt;
+ *
+ * <span class="attrib">@constructor</span>
+ */</span>
+Mongoose.Shard = <span class="reserved">function</span>(mongoose, server) {
+
+    <span class="reserved">this</span>.connection = mongoose;
+    <span class="reserved">this</span>.server = server;
+
+    <span class="comment">/**
+     * Add this shard.
+     *
+     * The callback will receive a response of the form:
+     * &lt;pre&gt;
+     * { "added" : "localhost:10000", "ok" : 1 }
+     * &lt;/pre&gt;
+     *
+     * If you do not specify local and the shard is on localhost, you will get:
+     * &lt;pre&gt;
+     * {
+     *     "ok" : 0,
+     *     "errmsg" : "can't use localhost as a shard since all shards need to communicate.  allowLocal to override for testing"
+     * }
+     * &lt;/pre&gt;
+     *
+     * <span class="attrib">@param</span> {boolean} [local] optional parameter specifying if the shard is on localhost
+     * <span class="attrib">@param</span> {function} [callback] optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.add = <span class="reserved">function</span>(local, callback) {
+        local = local ? true : false;
+        <span class="reserved">this</span>.connection.command({<span class="literal">'$pyhint'</span> : [{<span class="literal">"key"</span> : <span class="literal">"addshard"</span>, <span class="literal">"value"</span> : <span class="reserved">this</span>.server}, 
+                                              {<span class="literal">"key"</span> : <span class="literal">"allowLocal"</span>, <span class="literal">"value"</span> : local}]}, callback);
+    };
+
+    <span class="comment">/**
+     * Not yet implemented (in the db).
+     */</span>
+    <span class="reserved">this</span>.remove = <span class="reserved">function</span>() {
+        <span class="comment">// TODO</span>
+    }
+
+    <span class="comment">/**
+     * Checks the status of this server, including uptime, memory usage, and 
+     * activity.
+     *
+     * The callback will receive a response of the form:
+     * &lt;pre&gt;
+     * {
+     *     "uptime" : 52358,
+     *     "globalLock" : {
+     *          "totalTime" : 52358205700,
+     *          "lockTime" : 1455600,
+     *          "ratio" : 0.000027800799904034907
+     *     },
+     *     "mem" : {
+     *          "resident" : 22,
+     *          "virtual" : 145,
+     *          "supported" : true,
+     *          "mapped" : 80
+     *     },
+     *     "connections" : {
+     *          "current" : 2,
+     *          "available" : 19998
+     *     },
+     *     "extra_info" : {
+     *          "note" : "fields vary by platform",
+     *          "heap_usage_bytes" : 1874632,
+     *          "page_faults" : 1
+     *     },
+     *     "indexCounters" : {
+     *          "btree" : {
+     *              "accesses" : 1,
+     *              "hits" : 1,
+     *              "misses" : 0,
+     *              "resets" : 0,
+     *              "missRatio" : 0
+     *          }
+     *     },
+     *     "opcounters" : {
+     *          "insert" : 3,
+     *          "query" : 15,
+     *          "update" : 0,
+     *          "delete" : 0,
+     *          "getmore" : 0
+     *     },
+     *     "ok" : 1
+     * }
+     * &lt;/pre&gt;
+     *
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.status = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.connection.get(<span class="literal">"/_status"</span>, <span class="literal">"server="</span>+<span class="reserved">this</span>.server, callback);
+    };
+
+    <span class="comment">/**
+     * Get a list of databases on this shard.
+     *
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.getDatabases = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.connection.get(<span class="literal">"/_dbs"</span>, <span class="literal">"server="</span>+<span class="reserved">this</span>.server, callback);
+    };
+
+}
+
+<span class="comment">/**
+ * A sharded database.
+ *
+ * <span class="attrib">@constructor</span>
+ */</span>
+Mongoose.Database = <span class="reserved">function</span>(mongoose, db) {
+    <span class="reserved">this</span>.connection = mongoose;
+    <span class="reserved">this</span>.db = db + <span class="literal">""</span>;
+    
+    <span class="comment">/**
+     * Enables sharding on a database.
+     *
+     * <span class="attrib">@param</span> {String} db the database to enable sharding on
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.shard = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.connection.command({<span class="literal">"enablesharding"</span> : <span class="reserved">this</span>.db}, callback);
+    };
+
+    <span class="comment">/**
+     * Move the database to a different shard.
+     *
+     * <span class="attrib">@param</span> {String} to the server to move the database to
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.move = <span class="reserved">function</span>(to, callback) {
+        <span class="reserved">this</span>.connection.command({<span class="literal">'$pyhint'</span> : [{<span class="literal">"key"</span> : <span class="literal">"moveprimary"</span>, <span class="literal">"value"</span> : <span class="reserved">this</span>.db},
+                                              {<span class="literal">"key"</span> : <span class="literal">"to"</span>, <span class="literal">"value"</span> : to}]}, callback);
+    }
+};
+
+<span class="comment">/**
+ * A sharded collection.  Used to manipulate individual chunks (pieces of a 
+ * collection).
+ *
+ * <span class="attrib">@constructor</span>
+ */</span>
+Mongoose.Collection = <span class="reserved">function</span>(db, collection) {
+    <span class="reserved">this</span>.connection = db.connection;
+    <span class="reserved">this</span>.ns = db.db + <span class="literal">"."</span> + collection;
+
+    <span class="comment">/**
+     * Enables sharding on this collection.  The collection's database must have 
+     * sharding enabled before it can be enabled on the collection.
+     *
+     * <span class="attrib">@param</span> {object} key the field or fields on which to shard, e.g., {"x" : 1}
+     * <span class="attrib">@param</span> {boolean} [unique] if the shard key should be unique
+     * <span class="attrib">@param</span> {function} [callback] optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.shard = <span class="reserved">function</span>(key, unique, callback) {
+        unique = unique ? true : false;
+        <span class="reserved">this</span>.connection.command({<span class="literal">'$pyhint'</span> : [{<span class="literal">"key"</span> : <span class="literal">"shardcollection"</span>, <span class="literal">"value"</span> : <span class="reserved">this</span>.ns},
+                                              {<span class="literal">"key"</span> : <span class="literal">"key"</span>, <span class="literal">"value"</span> : key}, 
+                                              {<span class="literal">"key"</span> : <span class="literal">"unique"</span>, <span class="literal">"value"</span> : unique}]}, callback);
+    };
+
+    <span class="comment">/**
+     * Split this collection into two chunks on a single shard.  Use 
+     * MongooseCollection.move to move one of the chunks to a new shard.
+     *
+     * <span class="attrib">@param</span> {object} criteria must contain "find" OR "middle" field which 
+     * gives the split criteria.
+     * <span class="attrib">@param</span> {function} [callback] optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if criteria doesn't contain "find" or "middle" fields 
+     * or callback is not a function
+     */</span>
+    <span class="reserved">this</span>.split = <span class="reserved">function</span>(criteria, callback) {
+
+        var cmd = {<span class="literal">'$pyhint'</span> : [{<span class="literal">"key"</span> : <span class="literal">"shard"</span>, <span class="literal">"value"</span> : <span class="reserved">this</span>.ns}]};
+
+        <span class="reserved">if</span> (criteria.find != null) {
+            cmd.$pyhint[1] = {<span class="literal">"key"</span> : <span class="literal">"find"</span>, <span class="literal">"value"</span> : criteria.find};
+        }
+        <span class="reserved">else</span> <span class="reserved">if</span> (criteria.middle != null) {
+            cmd.$pyhint[1] = {<span class="literal">"key"</span> : <span class="literal">"middle"</span>, <span class="literal">"value"</span> : criteria.middle};
+        }
+        <span class="reserved">else</span> {
+            throw <span class="literal">"no find or middle object given"</span>;
+        }
+
+        <span class="reserved">this</span>.connection.command(cmd, callback);
+    };
+
+    <span class="comment">/**
+     * Move a chunk of this collection to a new shard.  Use the criteria 
+     * parameter to find the chunk to move.
+     *
+     * <span class="attrib">@param</span> {object} criteria must contain "find" field which matches at least
+     * one document in the chunk to move.
+     * <span class="attrib">@param</span> {string} to the shard to which to move the chunk, e.g., 
+     * "localhost:27019"
+     * <span class="attrib">@param</span> {function} [callback] optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if criteria doesn't contain "find" or "middle" fields 
+     * or callback is not a function
+     */</span>
+    <span class="reserved">this</span>.move = <span class="reserved">function</span>(criteria, to, callback) {
+        var cmd = {<span class="literal">'$pyhint'</span> : [{<span class="literal">"movechunk"</span> : <span class="reserved">this</span>.ns}]};
+
+        <span class="reserved">if</span> (criteria.find != null) {
+            cmd.$pyhint.push({<span class="literal">"key"</span> : <span class="literal">"find"</span>, <span class="literal">"value"</span> : criteria.find});
+        }
+        <span class="reserved">else</span> {
+            throw <span class="literal">"no find object given"</span>;
+        }
+        cmd.$pyhint.push({<span class="literal">"key"</span> : <span class="literal">"to"</span>, <span class="literal">"value"</span> : to + <span class="literal">""</span>});
+
+        <span class="reserved">this</span>.connection.command(cmd, callback);
+    };
+
+    <span class="comment">/**
+     * Get the version of sharding being used.
+     *
+     * <span class="attrib">@param</span> {function} callback optional function to call when a response is
+     * received.
+     * <span class="attrib">@return</span> undefined
+     * <span class="attrib">@throws</span> Exception if callback is not a function
+     */</span>
+    <span class="reserved">this</span>.version = <span class="reserved">function</span>(callback) {
+        <span class="reserved">this</span>.connection.command({<span class="literal">"getShardVersion"</span> : <span class="reserved">this</span>.ns}, callback);
+    };
+}
+
+
+Mongoose.mongos = { host : <span class="literal">"localhost"</span>, port : 27017 };
+Mongoose.httpd = { host : <span class="literal">"http://localhost"</span>, port : 27080 };
+Mongoose.defaultCallback = <span class="reserved">function</span>(msg) { <span class="reserved">return</span>; }
+
+<span class="comment">/**
+ * Handles errors in database responses.
+ * 
+ * <span class="attrib">@returns</span> an object.  If the "ok" field is 0, there will be a "msg" field 
+ * that will describe the error that occured.  If the command succeeded (or
+ * appeared to) the "ok" field will be 1.
+ * <span class="attrib">@type</span> Object
+ */</span>
+Mongoose.handleError = <span class="reserved">function</span>(msg) {
+    <span class="reserved">if</span> (!msg) {
+        <span class="reserved">return</span> {<span class="literal">"ok"</span> : 0, <span class="literal">"msg"</span> : <span class="literal">"Something went very wrong. You'll probably need to restart the server."</span>};
+    }
+    <span class="reserved">else</span> <span class="reserved">if</span> (!msg[<span class="literal">'ok'</span>]) {
+        <span class="reserved">return</span> {<span class="literal">"ok"</span> : 0, <span class="literal">"msg"</span> : msg[<span class="literal">'msg'</span>] ? msg[<span class="literal">'msg'</span>] : msg[<span class="literal">'errmsg'</span>]};
+    }
+    <span class="reserved">return</span> {<span class="literal">"ok"</span> : 1};
+};
+</pre>
+	<hr>
+
+
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<table border="0" width="100%" cellpadding="1" cellspacing="0">
+<tr>
+<td colspan=2 bgcolor="#EEEEFF" class="NavBarCell1">
+<a name="navbar_top_firstrow"><!-- --></a>
+<table border="0" cellpadding="0" cellspacing="3">
+  <tr align="center" valign="top">
+  
+  
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-summary.html"><font class="NavBarFont1"><b>Overview</b></font></a>&nbsp;</td>
+  <td bgcolor="#FFFFFF" class="NavBarCell1Rev">	&nbsp;<font class="NavBarFont1Rev"><b>File</b></font>&nbsp;</td>
+  
+
+  <td bgcolor="#FFFFFF" class="NavBarCell1"> <font class="NavBarFont1">Class</font>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="overview-tree.html"><font class="NavBarFont1"><b>Tree</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="index-all.html"--><font class="NavBarFont1"><b>Index</b></font></a>&nbsp;</td>
+  <td bgcolor="#EEEEFF" class="NavBarCell1">    <a href="help-doc.html"><font class="NavBarFont1"><b>Help</b></font></a>&nbsp;</td>
+  </tr>
+</table>
+</td>
+<td bgcolor="#EEEEFF" align="right" valign="top"><em>
+<b></b></em>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+&nbsp;PREV&nbsp;
+&nbsp;NEXT</font></td>
+<td bgcolor="white" class="NavBarCell2"><font size="-2">
+  <a href="index.html" target="_top"><b>FRAMES</b></a>  &nbsp;
+&nbsp;<a href="overview-summary.html" target="_top"><b>NO FRAMES</b></a>
+&nbsp;&nbsp;
+<script>
+  <!--
+  if(window==top) {
+    document.writeln('<A HREF="allclasses-noframe.html" TARGET=""><B>All Classes</B></A>');
+  }
+  //-->
+</script>
+<noscript>
+<a href="allclasses-noframe.html" target=""><b>All Classes</b></a>
+</noscript>
+</font></td>
+</tr>
+</table>
+<!-- =========== END OF NAVBAR =========== -->
+
+<hr>
+<font size="-1">
+
+</font>
+<div class="jsdoc_ctime">Documentation generated by <a href="http://jsdoc.sourceforge.net/" target="_parent">JSDoc</a> on Wed Feb 17 13:46:43 2010</div>
+</body>
+</html>
