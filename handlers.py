@@ -57,12 +57,8 @@ class MongoHandler:
                 temp[pair['key']] = pair['value']
             cmd = temp
 
-        try:
-            result = connection.admin._command(cmd)
-            out(json.dumps(result, default=json_util.default))
-        except OperationFailure as err:
-            out('{"ok" : 0, "msg" : "operation failed but you\'ll never know why."}')
-
+        result = connection.admin.command(cmd, check=False)
+        out(json.dumps(result, default=json_util.default))
         
 
     def _mongos(self, args, out):
