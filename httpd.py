@@ -19,15 +19,43 @@ class MongoServer(BaseHTTPRequestHandler):
                   "css" : "text/css",
                   "js" : "text/js" }
 
+    def _parse_call(self, uri):
+        """ 
+        this turns a uri like: /foo/bar/_query into properties: using the db 
+        foo, the collection bar, executing a query.
+
+        returns the database, collection, and action
+        """
+
+        parts = uri.split('/')
+
+        # operations always start with _
+        if parts[-1][0] != '_':
+            return (None, None, None)
+
+        if len(parts) == 1:
+            return ("admin", None, parts[0])
+        elif len(parts) == 2:
+            return (parts[0], None, parts[1])
+        else:
+            return (parts[0], ".".join(parts[1:-1]), parts[-1])
+
+
     def call_handler(self, uri, args):
-        # execute something
-        func = getattr(MongoServer.mh, uri, None)
+        """ execute something """
+
+        (db, collection, func_name) = self._parse_call(uri)
+        if db == None or func_name == None:
+            self.send_error(404, 'Script Not Found: '+uri)
+            return
+
+        func = getattr(MongoServer.mh, func_name, None)
         if callable(func):
             self.send_response(200, 'OK')
             self.send_header('Content-type', MongoServer.mimetypes['json'])
             self.end_headers()
 
-            func(args, self.wfile.write)
+            func(db, collection, args, self.wfile.write)
 
             return
         else:
