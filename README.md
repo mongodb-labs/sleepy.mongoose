@@ -1,13 +1,9 @@
-# MONGOOSE
+# Sleepy.Mongoose
 
-Mongoose is a JavaScript API for interacting with Mongo shards. 
+Sleepy.Mongoose is a REST interface for MongoDB.  
 
-Up until now, the only way to administrate sharding was through undocumented
-database functions.  Mongoose provide objects to represent the mongos process,
-shards, databases, and collections.  Each of these objects have simple,
-documented functions associated with them to interact with the database.
-
-For more information, see the documentation in the doc/ directory.
+For a quick tutorial, see 
+http://www.snailinaturtleneck.com/blog/2010/02/19/sleepy-mongoose-a-mongodb-rest-interface/.
 
 ### PREREQUISITES
 
@@ -19,20 +15,33 @@ Install pymongo:
 
     $ sudo easy_install pymongo
 
-### DOCUMENTATION
-
-Everything should be documented with various degrees of thoroughness.  You can
-see the documentation by opening doc/index.html in a web browser (httpd.py 
-doesn't need to be running).
-
 ### RUNNING
 
+Start the server by running:
+
       $ python httpd.py
+
+### DOCUMENTATION
+
+Start the server and go to http://localhost:27080/doc/symbols/Sleepy.Mongoose.html#constructor
+to see documentation for http requests.
 
 ### TROUBLESHOOTING
 
 If anything goes wrong, please email the MongoDB user list 
 (http://groups.google.com/group/mongodb-user).
+
+### MONGEESE
+
+Mongeese is a JavaScript API for interacting with Mongo shards.  It is built
+on Sleepy.Mongoose.
+
+Up until now, the only way to administrate sharding was through undocumented
+database functions.  Mongoose provide objects to represent the mongos process,
+shards, databases, and collections.  Each of these objects have simple,
+documented functions associated with them to interact with the database.
+
+For more information, see the documentation in the doc/ directory.
 
 ### TESTS
 
