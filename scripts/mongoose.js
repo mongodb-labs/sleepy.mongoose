@@ -24,6 +24,8 @@
 
 /**
  * Creates a new instance connected to a mongos.
+ * Requires jquery and jquery.json to be loaded.
+ *
  * @constructor
  * @param {String} host the hostname and optionally port number of the mongos.
  * If none is given, it will default to 
@@ -87,6 +89,18 @@ var Mongoose = function(host) {
         var size = Math.floor(((bytes+"").length-1)/3);
         bytes = bytes/Math.pow(1000, size);
         return bytes + " " + byte_units[size];
+    }
+
+    /**
+     * This turns an object into an array of pairs so that Python won't mess up
+     * the ordering.
+     */
+    this._pyhint = function(data) {
+        var kv = [];
+        for(var key in data) {
+            kv.push({"key" : key, "value" : data[key]});
+        }
+        return {'$pyhint' : kv};
     }
 
 
@@ -172,7 +186,7 @@ var Mongoose = function(host) {
      * @throws Exception if callback is not a function
      */
     this.command = function(obj, callback) {
-        this.post("/_cmd", "obj="+escape($.toJSON(obj)), callback);
+        this.post("/_cmd", "obj="+escape($.toJSON(this._pyhint(obj))), callback);
     }
 
     /**
@@ -270,8 +284,7 @@ Mongoose.Shard = function(mongoose, server) {
      */
     this.add = function(local, callback) {
         local = local ? true : false;
-        this.connection.command({'$pyhint' : [{"key" : "addshard", "value" : this.server}, 
-                                              {"key" : "allowLocal", "value" : local}]}, callback);
+        this.connection.command({"addshard" : this.server, "allowLocal" : local}, callback);
     };
 
     /**
@@ -384,8 +397,7 @@ Mongoose.Database = function(mongoose, db) {
      * @throws Exception if callback is not a function
      */
     this.move = function(to, callback) {
-        this.connection.command({'$pyhint' : [{"key" : "moveprimary", "value" : this.db},
-                                              {"key" : "to", "value" : to}]}, callback);
+        this.connection.command({"moveprimary" : this.db, "to" : to}, callback);
     }
 };
 
@@ -412,9 +424,7 @@ Mongoose.Collection = function(db, collection) {
      */
     this.shard = function(key, unique, callback) {
         unique = unique ? true : false;
-        this.connection.command({'$pyhint' : [{"key" : "shardcollection", "value" : this.ns},
-                                              {"key" : "key", "value" : key}, 
-                                              {"key" : "unique", "value" : unique}]}, callback);
+        this.connection.command({"shardcollection" : this.ns, "key" : key, "unique" : unique}, callback);
     };
 
     /**
@@ -431,13 +441,13 @@ Mongoose.Collection = function(db, collection) {
      */
     this.split = function(criteria, callback) {
 
-        var cmd = {'$pyhint' : [{"key" : "shard", "value" : this.ns}]};
+        var cmd = {"shard" : this.ns};
 
         if (criteria.find != null) {
-            cmd.$pyhint[1] = {"key" : "find", "value" : criteria.find};
+            cmd.find = criteria.find;
         }
         else if (criteria.middle != null) {
-            cmd.$pyhint[1] = {"key" : "middle", "value" : criteria.middle};
+            cmd.middle = criteria.middle;
         }
         else {
             throw "no find or middle object given";
@@ -457,19 +467,19 @@ Mongoose.Collection = function(db, collection) {
      * @param {function} [callback] optional function to call when a response is
      * received.
      * @return undefined
-     * @throws Exception if criteria doesn't contain "find" or "middle" fields 
+     * @throws Exception if criteria doesn't contain a "find" field
      * or callback is not a function
      */
     this.move = function(criteria, to, callback) {
-        var cmd = {'$pyhint' : [{"movechunk" : this.ns}]};
+        var cmd = {"movechunk" : this.ns};
 
         if (criteria.find != null) {
-            cmd.$pyhint.push({"key" : "find", "value" : criteria.find});
+            cmd.find = criteria.find;
         }
         else {
             throw "no find object given";
         }
-        cmd.$pyhint.push({"key" : "to", "value" : to + ""});
+        cmd.to = to;
 
         this.connection.command(cmd, callback);
     };

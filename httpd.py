@@ -17,7 +17,8 @@ class MongoServer(BaseHTTPRequestHandler):
                   "png" : "image/png",
                   "json" : "text/json",
                   "css" : "text/css",
-                  "js" : "text/js" }
+                  "js" : "text/js",
+                  "ico" : "image/vnd.microsoft.icon" }
 
     def _parse_call(self, uri):
         """ 
