@@ -32,7 +32,7 @@
  * <i>mongoose.host</i>:<i>mongoose.port</i>.
  */
 var Mongoose = function(host) {
-    this.mongos = host ? host : (Mongoose.mongos.host + ":" + Mongoose.mongos.port);
+    this.server = host ? host : (Mongoose.server.host + ":" + Mongoose.server.port);
     this.httpd = Mongoose.httpd.host + ":" + Mongoose.httpd.port;
 
     /**
@@ -180,7 +180,7 @@ var Mongoose = function(host) {
      * Execute a database command.
      *
      * @param {object} obj the command to execute
-     * @param {function} callback optional function to call when a response is
+     * @param {function} [callback] optional function to call when a response is
      * received.
      * @return undefined
      * @throws Exception if callback is not a function
@@ -190,16 +190,34 @@ var Mongoose = function(host) {
     }
 
     /**
+     * Connects to a db server.
+     *
+     * @param {String} [name] name to give connection
+     * @param {function} [callback] optional function to call when a response is
+     * received.
+     * @return undefined
+     * @throws Exception if callback is not a function
+     */
+    this.connect = function(name, callback) {
+        var args = "server="+this.server;
+        if (name && typeof name == "string") {
+            args += "&name="+name;
+        }
+
+        this.post("/_connect", args, callback);
+    }
+
+    /**
      * Sets the mongos to use.
      *
      * @param {String} server the mongos server to use
-     * @param {function} callback optional function to call when a response is
+     * @param {function} [callback] optional function to call when a response is
      * received.
      * @return undefined
      * @throws Exception if callback is not a function
      */
     this.setMongos = function(callback) {
-        this.post("/_mongos", "server="+this.mongos, callback);
+        this.connect("mongos", callback);
     };
 
     /**
@@ -498,7 +516,7 @@ Mongoose.Collection = function(db, collection) {
 }
 
 
-Mongoose.mongos = { host : "localhost", port : 27017 };
+Mongoose.server = { host : "localhost", port : 27017 };
 Mongoose.httpd = { host : "http://localhost", port : 27080 };
 Mongoose.defaultCallback = function(msg) { return; }
 

@@ -16,16 +16,16 @@ var m = new Mongoose();
 test("instance variables", function() {
         expect(4);
 
-        equals(m.mongos, Mongoose.mongos.host+":"+Mongoose.mongos.port, "this.mongos");
+        equals(m.server, Mongoose.server.host+":"+Mongoose.server.port, "this.mongos");
         equals(m.httpd, Mongoose.httpd.host+":"+Mongoose.httpd.port, "this.mongos");
 
         var host2 = "example.com:123";
         var m2 = new Mongoose(host2);
-        equals(m2.mongos, host2, "example host");
+        equals(m2.server, host2, "example host");
 
-        Mongoose.mongos = {"host" : "example.net", "port" : 456};
+        Mongoose.server = {"host" : "example.net", "port" : 456};
         var m3 = new Mongoose();
-        equals(m3.mongos, Mongoose.mongos.host+":"+Mongoose.mongos.port, "set default host & port");
+        equals(m3.server, Mongoose.server.host+":"+Mongoose.server.port, "set default host & port");
     });
 
 test("error handling", function() {

@@ -72,15 +72,6 @@ class MongoHandler:
         out(json.dumps(result, default=json_util.default))
         
 
-    def _mongos(self, db, collection, args, out):
-        (host, port) = self._get_host_and_port(args.getvalue('server'))
-
-        conn = self._get_connection('mongos', host, port)
-        if conn != None:
-            out('{"ok" : 1, "host" : "%s", "port" : %d}' % (host, port))
-        else:
-            out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
-
     def _dbs(self, db, collection, args, out):
         """Get a list of databases for a shard.
 
@@ -125,7 +116,17 @@ class MongoHandler:
         connect to a mongod
         """
 
-        self._get_connection("default", args.getvalue("host"), int(args.getvalue("port")))
+        (host, port) = self._get_host_and_port(args.getvalue('server'))
+
+        name = "default"
+        if "name" in args:
+            name = args.getvalue("name")
+
+        conn = self._get_connection(name, host, port)
+        if conn != None:
+            out('{"ok" : 1, "host" : "%s", "port" : %d}' % (host, port))
+        else:
+            out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
 
 
     def _query(self, db, collection, args, out):
