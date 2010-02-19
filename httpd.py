@@ -70,9 +70,18 @@ class MongoServer(BaseHTTPRequestHandler):
             (uri, q, args) = self.path.partition('?')
         else:
             uri = self.path
-            args = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
-                                    environ={'REQUEST_METHOD':'POST',
-                                             'CONTENT_TYPE':self.headers['Content-Type']})
+            if 'Content-Type' in self.headers:
+                args = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
+                                        environ={'REQUEST_METHOD':'POST',
+                                                 'CONTENT_TYPE':self.headers['Content-Type']})
+            else:
+                self.send_response(100, "Continue")
+                self.send_header('Content-type', MongoServer.mimetypes['json'])
+                self.end_headers()
+                self.wfile.write('{"ok" : 0, "errmsg" : "100-continue msgs not handled yet"}')
+
+                return (None, None, None)
+
 
         uri = uri.strip('/')
 
@@ -122,6 +131,8 @@ class MongoServer(BaseHTTPRequestHandler):
 
     def do_POST(self):
         (uri, args, type) = self.process_uri("POST")
+        if uri == None:
+            return
         self.call_handler(uri, args)
 
 
@@ -130,7 +141,7 @@ class MongoServer(BaseHTTPRequestHandler):
         print "\n================================="
         print "| MongoDB Sharding Admin Server |"
         print "=================================\n"
-        print "point your browser to http://localhost:27080\n"
+        print "listening for connections on http://localhost:27080\n"
 
         MongoServer.mh = MongoHandler()
 

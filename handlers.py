@@ -47,8 +47,12 @@ class MongoHandler:
         return (host, port)
 
 
-    def _get_son(self, str):
-        obj = json.loads(str)
+    def _get_son(self, str, out):
+        try:
+            obj = json.loads(str)
+        except ValueError, TypeError:
+            out('{"ok" : 0, "errmsg" : "couldn\'t parse json: %s"' % str)
+            return None
 
         # can't deserialize to an ordered dict!
         if '$pyhint' in obj:
@@ -66,7 +70,9 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongos"}')
             return
 
-        cmd = self._get_son(args.getvalue('obj'))
+        cmd = self._get_son(args.getvalue('obj'), out)
+        if cmd == None:
+            return
 
         result = connection[db].command(cmd, check=False)
         out(json.dumps(result, default=json_util.default))
@@ -110,7 +116,13 @@ class MongoHandler:
         if result != None:
             out(json.dumps(result))
 
+    def _hello(self, db, collection, args, out):
+        out('{"ok" : 1, "msg" : "Uh, we had a slight weapons malfunction, but ' + 
+            'uh... everything\'s perfectly all right now. We\'re fine. We\'re ' +
+            'all fine here now, thank you. How are you?"}')
+        return
         
+
     def _connect(self, db, collection, args, out):
         """
         connect to a mongod
@@ -129,7 +141,7 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
 
 
-    def _query(self, db, collection, args, out):
+    def _find(self, db, collection, args, out):
         """
         query the database.
         """
@@ -145,11 +157,15 @@ class MongoHandler:
 
         criteria = {}
         if 'criteria' in args:
-            criteria = self.get_son(args['criteria'][0])
+            criteria = self._get_son(args['criteria'][0], out)
+            if criteria == None:
+                return
 
         fields = None
         if 'fields' in args:
-            fields = self.get_son(args['fields'][0])
+            fields = self._get_son(args['fields'][0], out)
+            if fields == None:
+                return
 
         skip = 0
         if 'limit' in args:
@@ -183,14 +199,15 @@ class MongoHandler:
         Get more results from a cursor
         """
 
-        cursors = getattr(self, "cursors")
-
-        if not (id in args):
-            out('{"ok" : 0, "errmsg" : "no cursor id given"}' % id)
+        if 'id' not in args:
+            out('{"ok" : 0, "errmsg" : "no cursor id given"}')
             return
 
-        id = args.getvalue("id")
-        if not (id in cursors):
+
+        id = int(args["id"][0])
+        cursors = getattr(self, "cursors")
+
+        if id not in cursors:
             out('{"ok" : 0, "errmsg" : "couldn\'t find the cursor with id %d"}' % id)
             return
 
@@ -199,7 +216,7 @@ class MongoHandler:
         batch_size = 15
         if 'batch_size' in args:
             batch_size = int(args['batch_size'][0])
-            
+
         self.__output_results(cursor, out, batch_size)
 
 
@@ -266,7 +283,7 @@ class MongoHandler:
         
         conn[db][collection].update(criteria, newobj)
 
-    def _delete(self, db, collection, args, out):
+    def _remove(self, db, collection, args, out):
         """
         remove docs
         """
