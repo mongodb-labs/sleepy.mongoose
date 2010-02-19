@@ -253,9 +253,12 @@ class MongoHandler:
         if "docs" not in args: 
             out('{"ok" : 0, "errmsg" : "missing docs"}')
             return
-        docs = self._get_son(args.getvalue('docs'))
+        docs = self._get_son(args.getvalue('docs'), out)
+        if docs == None:
+            return
 
         conn[db][collection].insert(docs)
+        out('{"ok" : 1}')
 
     def _update(self, db, collection, args, out):
         """
@@ -274,14 +277,19 @@ class MongoHandler:
         if "criteria" not in args: 
             out('{"ok" : 0, "errmsg" : "missing criteria"}')
             return
-        criteria = self._get_son(args.getvalue('criteria'))
+        criteria = self._get_son(args.getvalue('criteria'), out)
+        if criteria == None:
+            return
 
         if "newobj" not in args:
             out('{"ok" : 0, "errmsg" : "missing newobj"}')
             return
-        newobj = self._get_son(args.getvalue('newobj'))
+        newobj = self._get_son(args.getvalue('newobj'), out)
+        if newobj == None:
+            return
         
         conn[db][collection].update(criteria, newobj)
+        out('{"ok" : 1}')
 
     def _remove(self, db, collection, args, out):
         """
@@ -299,7 +307,10 @@ class MongoHandler:
         
         criteria = {}
         if "criteria" in args:
-            criteria = self._get_son(args.getvalue('criteria'))
+            criteria = self._get_son(args.getvalue('criteria'), out)
+            if criteria == None:
+                return
         
         conn[db][collection].remove(criteria)
+        out('{"ok" : 1}')
 

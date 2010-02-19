@@ -15,14 +15,18 @@
  *
  */
 
-Mongeese.prototype = new Sleepy.Mongoose();
 
 /**
  * This is the JavaScript sharding API
  *
  * It can be used by web interfaces to easily interact with the sharding 
  * backend.
+ * @name Mongeese 
+ * @class 
  */
+Mongeese = {};
+
+Mongeese.prototype = new Sleepy.Mongoose();
 
 /**
  * Sets the mongos to use.

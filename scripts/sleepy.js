@@ -1,42 +1,27 @@
-/**
- * Sleepy.Mongoose is a JavaScript interface to MongoDB that is mainly
- * a proof-of-concept for the rest interface.
+/*
+ * Copyright 2010 10gen, Inc.
  *
- * REST protocol:
- * to connect, call:
- * /_connect
- *   host=hostname
- *   port=port
- * 
- * GETs
- * /dbname/collection/_query - query request
- *   criteria=&lt;search criteria&gt;
- *   skip=# to skip
- *   limit=# to return
- *   sort=sort obj
- *   batch_size=# of results to return at a time, defaults to 15
- * /dbname/collection/_more - get more results
- *   id=cursor id
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * POSTs
- * /dbname/collection/_insert - insert request
- *   docs=&lt;an array of objs to insert&gt;
- *   opts=options
- * /dbname/collection/_delete - delete request
- *   criteria=&lt;criteria for deletion&gt;
- *   opts=options
- * /dbname/collection/_update - update request
- *   criteria=&lt;criteria for update&gt;
- *   newobj=&lt;update content&gt;
- *   opts=&lt;options&gt;
- *   
- * Special ops:
- * /_dbs - list of databases
- * /dbname/_cmd - database command on db dbname
- * /_cmd - database command on admin db
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  */
 
+
+/**
+ * Sleepy is the basic REST JavaScript interface that Mongoose is build on top 
+ * of.
+ *
+ * @constructor
+ */
 Sleepy = function(host, connect) {
     this.httpd = Sleepy.httpd.host + ":" + Sleepy.httpd.port;
 

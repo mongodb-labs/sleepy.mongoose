@@ -15,10 +15,98 @@
  *
  */
 
+
+/**
+ * Sleepy.Mongoose is the REST interface to Mongo. 
+ *
+ * Possible requests for Sleepy.Mongoose:
+ *
+ * POST requests:
+ * <ul>
+ *  <li>
+ *   <pre>/_connect</pre>
+ *   Required arguments:
+ *   <ul>
+ *    <li>server=<em>database server</em></li>
+ *   </ul>
+ *  </li>
+ *  <li>
+ *   <pre>/dbname/collection/_insert</pre>
+ *   Required arguments:
+ *   <ul>
+ *    <li>docs=&lt;an array of objs to insert&gt;</li>
+ *   </ul>
+ *   Returns:
+ *   <pre>{"ok" : 1}</pre> 
+ *  </li>
+ *  <li>
+ *   <pre>/dbname/collection/_remove</pre>
+ *   Optional arguments:
+ *   <ul>
+ *    <li>criteria=&lt;criteria for deletion&gt;</li>
+ *   </ul>
+ *   Returns:
+ *   <pre>{"ok" : 1}</pre> 
+ *  </li>
+ *  <li>
+ *   <pre>/dbname/collection/_update</pre>
+ *   Required arguments:
+ *   <ul>
+ *    <li>criteria=&lt;criteria for update&gt;</li>
+ *    <li>newobj=&lt;update content&gt;</li>
+ *   </ul>
+ *   Returns:
+ *   <pre>{"ok" : 1}</pre> 
+ *  </li>
+ * </ul>
+ *
+ * GET requests:
+ * <ul>
+ *  <li>
+ *   <pre>/_hello</pre>
+ *   <p>Takes no arguments.  Returns a JSON object with "ok" and "msg" fields.</p>
+ *  </li>
+ *  <li>
+ *   <pre>/dbname/collection/_find</pre>
+ *   Optional arguments:
+ *   <ul>
+ *    <li>criteria=&lt;search criteria&gt;</li>
+ *    <li>fields=&lt;fields to return&gt;</li>
+ *    <li>skip=# to skip</li>
+ *    <li>limit=# to return</li>
+ *    <li>batch_size=# of results to return at a time, defaults to 15</li>
+ *   </ul>
+ *   Returns:
+ *   <pre>{"ok" : 1, "results" : [docs], "id" : N}</pre> 
+ *  </li>
+ *  <li>
+ *   <pre>/dbname/collection/_more</pre>
+ *   Required arguments:
+ *   <ul>
+ *    <li>id=cursor id</li>
+ *   </ul>
+ *   Optional arguments:
+ *   <ul>
+ *    <li>batch_size=# of results to return at a time, defaults to 15</li>
+ *   </ul>
+ *   Returns:
+ *   <pre>{"ok" : 1, "results" : [docs], "id" : N}</pre> 
+ *  </li>
+ * </ul>
+ *
+ * @name Sleepy.Mongoose 
+ * @class 
+ */
+Sleepy.Mongoose = {};
+
+/**
+ * Constructs a new instance of Sleepy.Mongoose.
+ * @constructor
+ */
 Sleepy.Mongoose.prototype = new Sleepy();
 
 Sleepy.Mongoose.prototype.constructor = function(host) {
-    this.server = host ? host : (Mongoose.server.host + ":" + Mongoose.server.port);
+    this.server = host ? host : (Sleepy.Mongoose.server.host + ":" + Sleepy.Mongoose.server.port);
 
     if (connect !== false) {
         this.connect();
@@ -59,6 +147,7 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
 
     /**
      * Query the database.
+     *
      * Options can include:
      * <dl>
      *  <dt>criteria : <em>object</em></dt>
@@ -87,12 +176,13 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.find(db, collection, options, callback) {
+    this.find = function(db, collection, options, callback) {
         this._doOp("_find", "get", db, collection, options, callback);
     }
 
     /**
      * Get more results from a cursor.
+     *
      * Options must include:
      * <dl>
      *  <dt>id : <em>N</em></dt>
@@ -119,12 +209,12 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.more(db, collection, options, callback) {
+    this.more = function(db, collection, options, callback) {
         this._doOp("_more", "get", db, collection, options, callback);
     }
 
     /**
-     * Delete objects from a collection
+     * Delete objects from a collection.
      *
      * Options may include:
      * <dl>
@@ -144,12 +234,13 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.remove(db, collection, options, callback) {
+    this.remove = function(db, collection, options, callback) {
         this._doOp("_remove", "post", db, collection, options, callback);
     }
 
     /**
      * Get more results from a cursor.
+     *
      * Options must include:
      * <dl>
      *  <dt>criteria : <em>object</em></dt>
@@ -170,7 +261,7 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.update(db, collection, options, callback) {
+    this.update = function(db, collection, options, callback) {
         this._doOp("_update", "post", db, collection, options, callback);
     }
 
@@ -194,7 +285,7 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
      * @return undefined
      * @throws Exception if callback is not a function
      */
-    this.insert(db, collection, options, callback) {
+    this.insert = function(db, collection, options, callback) {
         this._doOp("_insert", "post", db, collection, options, callback);
     }
 
@@ -221,5 +312,5 @@ Sleepy.Mongoose.prototype.constructor = function(host) {
  * The default host an port to use if the constructor is not passed a server
  * name.  This is an object with fields "host" (string) and "port" (number).
  */
-Mongoose.server = { host : "localhost", port : 27017 };
+Sleepy.Mongoose.server = { host : "localhost", port : 27017 };
 
