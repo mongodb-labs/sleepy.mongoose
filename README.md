@@ -2,16 +2,11 @@
 
 Sleepy.Mongoose is a REST interface for MongoDB.  
 
-For a quick tutorial, see 
-http://www.snailinaturtleneck.com/blog/2010/02/19/sleepy-mongoose-a-mongodb-rest-interface/.
-
 ## PREREQUISITES
 
-Install easy-install:
+MongoDB and pymongo.  You can get MongoDB from http://www.mongodb.org.
 
-    $ sudo apt-get install python-setuptools
-
-Install pymongo:
+You can install pymongo with easy_install:
 
     $ sudo easy_install pymongo
 
@@ -22,6 +17,9 @@ Start the server by running:
       $ python httpd.py
 
 ## DOCUMENTATION
+
+There is a quick tutorial you can use to get started on 
+[my blog](http://www.snailinaturtleneck.com/blog/2010/02/22/sleepy-mongoose-a-mongodb-rest-interface/).
 
 Sleepy.Mongoose only uses GETs and POSTs right now.
 
