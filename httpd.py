@@ -153,7 +153,7 @@ class MongoServer(BaseHTTPRequestHandler):
     @staticmethod
     def serve_forever(port):
         print "\n================================="
-        print "| MongoDB Sharding Admin Server |"
+        print "|      MongoDB REST Server      |"
         print "=================================\n"
         print "listening for connections on http://localhost:27080\n"
 
