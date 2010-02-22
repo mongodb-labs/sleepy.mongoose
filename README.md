@@ -107,7 +107,7 @@ name is necessary.
 
 Required arguments:
 
-* `server=database_server`
+* `server=database_server` (string)
 
 Optional arguments: none
 
@@ -127,7 +127,7 @@ Inserts one or more documents into a collection.
 
 Required arguments:
 
-* `docs=array_of_docs`
+* `docs=array_of_docs` (array of objects)
 
 Optional arguments: none
 
@@ -149,8 +149,8 @@ Updates an existing document.
 
 Required arguments:
 
-* `criteria=criteria_for_update`
-* `newobj=modifications`
+* `criteria=criteria_for_update` (object)
+* `newobj=modifications` (object)
 
 Optional arguments: none
 
@@ -174,7 +174,7 @@ Required arguments: none
 
 Optional arguments:
 
-* `criteria=criteria_for_removal`
+* `criteria=criteria_for_removal` (object)
 
 Returns: `{"ok" : 1}`
 
