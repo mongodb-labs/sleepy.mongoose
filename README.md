@@ -56,6 +56,7 @@ Query for documents.
 Required arguments: none
 
 Optional arguments:
+
 * `criteria=search_criteria` (object)
 * `fields=fields_to_return` (object)
 * `skip=num` (number)
@@ -79,9 +80,11 @@ TODO: sort
 Get more results from an existing cursor.
 
 Required arguments:
+
 * `id=cursor_id` (number)
 
 Optional arguments:
+
 * `batch_size=num_to_return` (number)
 
 Returns: `{"ok" : 1, "results" : [{...}, ... ], "id" : cursor_id}`
@@ -90,7 +93,7 @@ Example:
 
 Get one more result from a cursor.
 
-   curl -X GET 'http://localhost:27080/foo/bar/_more?id=1&batch_size=1'
+    curl -X GET 'http://localhost:27080/foo/bar/_more?id=1&batch_size=1'
 
 
 ### POST Requests
@@ -103,6 +106,7 @@ Inserts one or more documents into a collection.  No database or collection
 name is necessary.
 
 Required arguments:
+
 * `server=database_server`
 
 Optional arguments: none
@@ -122,6 +126,7 @@ Connecting to a mongod server running locally on port 27017.
 Inserts one or more documents into a collection.
 
 Required arguments:
+
 * `docs=array_of_docs`
 
 Optional arguments: none
@@ -143,6 +148,7 @@ TODO: safe insert
 Updates an existing document.
 
 Required arguments:
+
 * `criteria=criteria_for_update`
 * `newobj=modifications`
 
@@ -167,6 +173,7 @@ Removes documents from a collection.
 Required arguments: none
 
 Optional arguments:
+
 * `criteria=criteria_for_removal`
 
 Returns: `{"ok" : 1}`
