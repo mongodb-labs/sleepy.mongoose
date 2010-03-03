@@ -184,6 +184,15 @@ Remove all documents where the "x" field is 2.
 
 TODO: just one, safe mode
 
+## TODO
+
+There's all sorts of things that need doing interspersed with the doc above.
+Also needed are: 
+
+* Honey bunches of helpers: _ensure_index, _command (which is done but not 
+doc-ed), listing databases, listing collections, dropping things
+* Handlers to get $oid, $date, etc. into a proper BSON types
+
 
 ## TROUBLESHOOTING
 
