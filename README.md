@@ -57,19 +57,22 @@ Optional arguments:
 
 * `criteria=search_criteria` (object)
 * `fields=fields_to_return` (object)
+* `sort=sort_fields` (object)
 * `skip=num` (number)
 * `limit=num` (number)
 * `batch_size=num_to_return` (number)
 
 Returns: `{"ok" : 1, "results" : [{...}, ... ], "id" : cursor_id}`
 
-Example:
+Examples:
 
 Find all documents in the foo.bar namespace.
 
     curl -X GET 'http://localhost:27080/foo/bar/_find'
 
-TODO: sort
+Find all documents in the foo.bar namespace and sort by x descending
+
+    curl -X GET 'http://localhost:27080/foo/bar/_find?sort=%7B%22x%22%3A-1%7D'
 
 #### Get More Results
 

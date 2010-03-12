@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pymongo import Connection, json_util
+from pymongo import Connection, json_util, ASCENDING, DESCENDING
 from pymongo.son import SON
 from pymongo.errors import ConnectionFailure, OperationFailure
 
@@ -65,9 +65,13 @@ class MongoHandler:
         try:
             obj = json.loads(str)
         except ValueError, TypeError:
-            out('{"ok" : 0, "errmsg" : "couldn\'t parse json: %s"' % str)
+            out('{"ok" : 0, "errmsg" : "couldn\'t parse json: %s"}' % str)
             return None
 
+        if getattr(obj, '__iter__', False) == False:
+            out('{"ok" : 0, "errmsg" : "type is not iterable: %s"}' % str)
+            return None
+            
         # can't deserialize to an ordered dict!
         if '$pyhint' in obj:
             temp = SON()
@@ -190,6 +194,23 @@ class MongoHandler:
             skip = int(args['skip'][0])
 
         cursor = conn[db][collection].find(spec=criteria, fields=fields, limit=limit, skip=skip)
+
+        sort = None
+        if 'sort' in args:
+            sort = self._get_son(args['sort'][0], out)
+            if sort == None:
+                return
+
+            stupid_sort = []
+
+            for field in sort:
+                if sort[field] == -1:
+                    stupid_sort.append([field, DESCENDING])
+                else:
+                    stupid_sort.append([field, ASCENDING])
+
+            cursor.sort(stupid_sort)
+
 
         if not hasattr(self, "cursors"):
             setattr(self, "cursors", {})
