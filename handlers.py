@@ -96,6 +96,11 @@ class MongoHandler:
             return
 
         result = conn[db].command(cmd, check=False)
+
+        # debugging
+        if result['ok'] == 0:
+            result['cmd'] = args.getvalue('cmd')
+
         out(json.dumps(result, default=json_util.default))
         
 
