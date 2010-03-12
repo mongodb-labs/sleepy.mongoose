@@ -83,16 +83,16 @@ class MongoHandler:
 
 
     def _cmd(self, db, collection, args, out):
-        connection = self._get_connection('mongos')
-        if connection == None:
-            out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongos"}')
+        conn = self._get_connection()
+        if conn == None:
+            out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
 
-        cmd = self._get_son(args.getvalue('obj'), out)
+        cmd = self._get_son(args.getvalue('cmd'), out)
         if cmd == None:
             return
 
-        result = connection[db].command(cmd, check=False)
+        result = conn[db].command(cmd, check=False)
         out(json.dumps(result, default=json_util.default))
         
 

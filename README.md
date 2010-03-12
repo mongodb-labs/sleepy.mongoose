@@ -10,6 +10,8 @@ You can install pymongo with easy_install:
 
     $ sudo easy_install pymongo
 
+Sleepy.Mongoose requires pymongo version 1.4 or greater.
+
 ## RUNNING
 
 Start the server by running:
@@ -32,6 +34,15 @@ An example: to find all documents in the collection "users" in the database
 
     http://localhost:27080/website/users/_find
 
+You should make sure any options are URL escaped. You can easily do this with
+any JavaScript shell, including the mongo shell.
+
+For example, to query for {'x' : 1}, we have the string "{'x' : 1}".  We run
+escape("{'x' : 1}") and get "%7B%22x%22%3A1%7D".  We can now paste this beautful
+string into our URL:
+
+    http://localhost:27080/website/users/_find?criteria=%7B%22x%22%3A1%7D
+
 
 ### GET Requests
 
@@ -43,7 +54,15 @@ Basically a no-op that just makes sure the server is listening for connections.
 
 Arguments: none
 
-Returns: `{"ok" : 1, "msg" : string}`
+Returns: 
+
+    {
+        "ok" : 1, 
+        "msg" : "Uh, we had a slight weapons malfunction, but uh... everything's
+            perfectly all right now. We're fine. We're all fine here now, 
+            thank you. How are you?"
+    }
+
 
 #### Queries
 
@@ -120,6 +139,8 @@ Connecting to a mongod server running locally on port 27017.
 
     curl --data server=localhost:27017 'http://localhost:27080/_connect'
 
+TODO: allow _connect with no params to connect to localhost:27017
+
 #### Inserts
 
     http://localhost:27080/dbname/cname/_insert
@@ -187,14 +208,42 @@ Remove all documents where the "x" field is 2.
 
 TODO: just one, safe mode
 
+#### Commands
+
+     http://localhost:27080/dbname/_cmd
+
+Runs a database command.
+
+Required arguments:
+
+* `cmd=cmd_obj` (object)
+
+Returns: database response
+
+Example:
+
+Drop the 'bar' collection in the 'foo' database:
+
+     curl --data 'cmd={"drop" : "bar"}' 'http://localhost:27080/foo/_cmd'
+
 ## TODO
 
 There's all sorts of things that need doing interspersed with the doc above.
 Also needed are: 
 
-* Honey bunches of helpers: _ensure_index, _command (which is done but not 
-doc-ed), listing databases, listing collections, dropping things
+* Honey bunches of helpers: _ensure_index, listing databases, listing 
+collections, dropping things
 * Handlers to get $oid, $date, etc. into a proper BSON types
+
+## TESTS
+
+To run the tests, you must install restclient:
+
+    $ easy_install restclient
+
+Then run:
+
+    $ python t/get.py
 
 
 ## TROUBLESHOOTING
