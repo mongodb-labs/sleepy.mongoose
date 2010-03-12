@@ -51,6 +51,9 @@ class MongoHandler:
             return (host, port)
 
         m = re.search('([^:]+):([0-9]+)?', server)
+        if m == None:
+            return (host, port)
+
         handp = m.groups()
 
         if len(handp) >= 1:
@@ -64,7 +67,7 @@ class MongoHandler:
     def _get_son(self, str, out):
         try:
             obj = json.loads(str)
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             out('{"ok" : 0, "errmsg" : "couldn\'t parse json: %s"}' % str)
             return None
 
@@ -132,7 +135,7 @@ class MongoHandler:
 
         result = connection[db].command({"serverStatus" : 1}, check=False)
         if result != None:
-            out(json.dumps(result))
+            out(json.dumps(result, default=json_util.default))
 
     def _hello(self, db, collection, args, out):
         out('{"ok" : 1, "msg" : "Uh, we had a slight weapons malfunction, but ' + 
