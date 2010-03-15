@@ -154,7 +154,11 @@ class MongoHandler:
         connect to a mongod
         """
 
-        (host, port) = self._get_host_and_port(args.getvalue('server'))
+        if "server" in args:
+            (host, port) = self._get_host_and_port(args.getvalue('server'))
+        else:
+            host = "localhost"
+            port = 27017
 
         name = "default"
         if "name" in args:

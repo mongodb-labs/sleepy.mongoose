@@ -37,8 +37,8 @@ An example: to find all documents in the collection "users" in the database
 You should make sure any options are URL escaped. You can easily do this with
 any JavaScript shell, including the mongo shell.
 
-For example, to query for {'x' : 1}, we have the string "{'x' : 1}".  We run
-escape("{'x' : 1}") and get "%7B%22x%22%3A1%7D".  We can now paste this beautful
+For example, to query for `{'x' : 1}`, we have the string `"{'x' : 1}"`.  We run
+`escape("{'x' : 1}")` and get `"%7B%22x%22%3A1%7D"`.  We can now paste this beautful
 string into our URL:
 
     http://localhost:27080/website/users/_find?criteria=%7B%22x%22%3A1%7D
@@ -125,21 +125,21 @@ Get one more result from a cursor.
 Inserts one or more documents into a collection.  No database or collection
 name is necessary.
 
-Required arguments:
-
-* `server=database_server` (string)
+If no arguments are given, it tries to connect to "localhost:27017".
 
 Optional arguments: none
 
-Returns: `{"ok" : 1, "host" : hostname, "port" : port_num}`
+* `server=database_server` (string)
+
+Returns: `{"ok" : 1, "host" : hostname, "port" : port_num}` on success,
+`{"ok" : 0, "errmsg" : "could not connect", "host" : hostname, "port" : port_num}`
+on failure.
 
 Example:
 
 Connecting to a mongod server running locally on port 27017.
 
     curl --data server=localhost:27017 'http://localhost:27080/_connect'
-
-TODO: allow _connect with no params to connect to localhost:27017
 
 #### Inserts
 
