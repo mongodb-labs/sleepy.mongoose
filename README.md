@@ -151,17 +151,34 @@ Required arguments:
 
 * `docs=array_of_docs` (array of objects)
 
-Optional arguments: none
+Optional arguments:
 
-Returns: `{"ok" : 1}`
+* `safe=boolean` (0 or 1)
+
+Returns: 
+
+    {
+        "status" : {
+            "ok" : 1,
+            "err" : null,
+            "n" : 0
+        }
+        "oids" : [
+            {"$oid" : doc1_id},
+            {"$oid" : doc2_id},
+            ...
+        ]
+    }
+
+docX_id is a string representation of the inserted id, e.g., 
+"4b9fad111d41c82cae000000".  The "status" field will only be included if you
+specify "safe".
 
 Example:
 
 Inserting two documents (`{"x" : 2}` and `{"x" : 3}`) into the namespace foo.bar.
 
     curl --data 'docs=[{"x":2},{"x":3}]' 'http://localhost:27080/foo/bar/_insert'
-
-TODO: safe insert
 
 #### Updates
 
@@ -244,6 +261,7 @@ To run the tests, you must install restclient:
 Then run:
 
     $ python t/get.py
+    $ python t/post.py
 
 
 ## TROUBLESHOOTING

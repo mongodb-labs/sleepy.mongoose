@@ -288,24 +288,33 @@ class MongoHandler:
         insert a doc
         """
 
-        if db == None or collection == None:
-            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
-
         conn = self._get_connection()
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
 
+        if db == None or collection == None:
+            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
+            return            
+
         if "docs" not in args: 
             out('{"ok" : 0, "errmsg" : "missing docs"}')
             return
+
         docs = self._get_son(args.getvalue('docs'), out)
         if docs == None:
             return
 
-        conn[db][collection].insert(docs)
-        out('{"ok" : 1}')
+        safe = False
+        if "safe" in args:
+            safe = bool(args.getvalue("safe"));
+
+        result = {}
+        result['oids'] = conn[db][collection].insert(docs)
+        if safe:
+            result['status'] = conn[db].last_status()
+
+        out(json.dumps(result, default=json_util.default))
 
     def _update(self, db, collection, args, out):
         """
