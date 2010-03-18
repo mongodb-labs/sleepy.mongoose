@@ -321,14 +321,14 @@ class MongoHandler:
         update a doc
         """
 
-        if db == None or collection == None:
-            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
-
         conn = self._get_connection()
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
+
+        if db == None or collection == None:
+            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
+            return            
         
         if "criteria" not in args: 
             out('{"ok" : 0, "errmsg" : "missing criteria"}')
@@ -344,8 +344,25 @@ class MongoHandler:
         if newobj == None:
             return
         
-        conn[db][collection].update(criteria, newobj)
-        out('{"ok" : 1}')
+        upsert = False
+        if "upsert" in args:
+            upsert = bool(args.getvalue('upsert'))
+
+        multi = False
+        if "multi" in args:
+            multi = bool(args.getvalue('multi'))
+
+        conn[db][collection].update(criteria, newobj, upsert=upsert, multi=multi)
+
+        safe = False
+        if "safe" in args:
+            safe = bool(args.getvalue("safe"));
+
+        if safe:
+            result = conn[db].last_status()
+            out(json.dumps(result, default=json_util.default))
+        else:
+            out('{"ok" : 1}')
 
     def _remove(self, db, collection, args, out):
         """

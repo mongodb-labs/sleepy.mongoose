@@ -37,12 +37,15 @@ An example: to find all documents in the collection "users" in the database
 You should make sure any options are URL escaped. You can easily do this with
 any JavaScript shell, including the mongo shell.
 
-For example, to query for `{'x' : 1}`, we have the string `"{'x' : 1}"`.  We run
-`escape("{'x' : 1}")` and get `"%7B%22x%22%3A1%7D"`.  We can now paste this beautful
+For example, to query for `{"x" : 1}`, we have the string `'{"x" : 1}'`.  We run
+`escape('{"x" : 1}')` and get `"%7B%22x%22%20%3A%201%7D"`.  We can now paste this beautful
 string into our URL:
 
-    http://localhost:27080/website/users/_find?criteria=%7B%22x%22%3A1%7D
+    http://localhost:27080/website/users/_find?criteria=%7B%22x%22%20%3A%201%7D
 
+`{'x' : 1}` is valid JSON, but unfortunately, the Python JSON parser doesn't 
+think so.  You must always use double quotes around keys, e.g., this is valid:
+`{"x" : 1}`.
 
 ### GET Requests
 
@@ -191,17 +194,25 @@ Required arguments:
 * `criteria=criteria_for_update` (object)
 * `newobj=modifications` (object)
 
-Optional arguments: none
+Optional arguments: 
 
-Returns: `{"ok" : 1}`
+* `upsert=bool`
+* `multi=bool`
+* `safe=bool`
+
+Returns: If `safe` is `false`, 
+
+    {"ok" : 1}
+
+If `safe` is `true`
+
+    {"ok" : X, "n" : N, "err" : msg_or_null}
 
 Example:
 
 Increments a field.
 
     curl --data 'criteria={"x":1}&newobj={"$inc":{"x":1}}' 'http://localhost:27080/foo/bar/_update'
-
-TODO: uperts, multiupdates, safe mode
 
 #### Removes
 
