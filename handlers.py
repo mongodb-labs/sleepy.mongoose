@@ -85,8 +85,8 @@ class MongoHandler:
         return obj
 
 
-    def _cmd(self, db, collection, args, out):
-        conn = self._get_connection()
+    def _cmd(self, args, out, name = None, db = None, collection = None):
+        conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
@@ -142,27 +142,25 @@ class MongoHandler:
         if result != None:
             out(json.dumps(result, default=json_util.default))
 
-    def _hello(self, db, collection, args, out):
+    def _hello(self, args, out, name = None, db = None, collection = None):
         out('{"ok" : 1, "msg" : "Uh, we had a slight weapons malfunction, but ' + 
             'uh... everything\'s perfectly all right now. We\'re fine. We\'re ' +
             'all fine here now, thank you. How are you?"}')
         return
         
 
-    def _connect(self, db, collection, args, out):
+    def _connect(self, args, out, name = None, db = None, collection = None):
         """
         connect to a mongod
         """
 
+        host = "localhost"
+        port = 27017
         if "server" in args:
             (host, port) = self._get_host_and_port(args.getvalue('server'))
-        else:
-            host = "localhost"
-            port = 27017
 
-        name = "default"
-        if "name" in args:
-            name = args.getvalue("name")
+        if name == None:
+            name = "default"
 
         conn = self._get_connection(name, host, port)
         if conn != None:
@@ -171,19 +169,19 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
 
 
-    def _find(self, db, collection, args, out):
+    def _find(self, args, out, name = None, db = None, collection = None):
         """
         query the database.
         """
 
-        if db == None or collection == None:
-            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
-
-        conn = self._get_connection()
+        conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
+
+        if db == None or collection == None:
+            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
+            return            
 
         criteria = {}
         if 'criteria' in args:
@@ -241,7 +239,7 @@ class MongoHandler:
         self.__output_results(cursor, out, batch_size)
 
 
-    def _more(self, db, collection, args, out):
+    def _more(self, args, out, name = None, db = None, collection = None):
         """
         Get more results from a cursor
         """
@@ -283,19 +281,19 @@ class MongoHandler:
         out(json.dumps({"results" : batch, "id" : cursor.id, "ok" : 1}, default=json_util.default))
 
 
-    def _insert(self, db, collection, args, out):
+    def _insert(self, args, out, name = None, db = None, collection = None):
         """
         insert a doc
         """
 
-        conn = self._get_connection()
+        conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
 
         if db == None or collection == None:
             out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
+            return
 
         if "docs" not in args: 
             out('{"ok" : 0, "errmsg" : "missing docs"}')
@@ -316,19 +314,19 @@ class MongoHandler:
 
         out(json.dumps(result, default=json_util.default))
 
-    def _update(self, db, collection, args, out):
+    def _update(self, args, out, name = None, db = None, collection = None):
         """
         update a doc
         """
 
-        conn = self._get_connection()
+        conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
 
         if db == None or collection == None:
             out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
+            return
         
         if "criteria" not in args: 
             out('{"ok" : 0, "errmsg" : "missing criteria"}')
@@ -364,19 +362,19 @@ class MongoHandler:
         else:
             out('{"ok" : 1}')
 
-    def _remove(self, db, collection, args, out):
+    def _remove(self, args, out, name = None, db = None, collection = None):
         """
         remove docs
         """
 
-        if db == None or collection == None:
-            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
-
-        conn = self._get_connection()
+        conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
             return
+
+        if db == None or collection == None:
+            out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
+            return            
         
         criteria = {}
         if "criteria" in args:

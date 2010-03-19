@@ -47,6 +47,19 @@ string into our URL:
 think so.  You must always use double quotes around keys, e.g., this is valid:
 `{"x" : 1}`.
 
+### Connections
+
+Sleepy.Mongoose can create multiple connections to the same (or different) 
+database servers by labelling each connection.  If no name parameter is passed
+to `_connect`, the connection is labelled `default` and that connection is used
+in subsequent commands (that do not specify a different host).
+
+   curl http://localhost:27080/_connect # connects to localhost:27017 (A)
+   curl --data 'name=backup' http://localhost:27080/_connect # creates another connection (B)
+
+   curl http://localhost:27080/_find # uses A
+   curl http://localhost:27080/_find?name=backup # uses B
+
 ### GET Requests
 
 #### Hello, world

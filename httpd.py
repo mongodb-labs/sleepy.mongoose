@@ -64,13 +64,20 @@ class MongoServer(BaseHTTPRequestHandler):
             self.send_error(404, 'Script Not Found: '+uri)
             return
 
+        name = None
+        if "name" in args:
+            if type(args).__name__ == "dict":
+                name = args["name"][0]
+            else:
+                name = args.getvalue("name")
+
         func = getattr(MongoServer.mh, func_name, None)
         if callable(func):
             self.send_response(200, 'OK')
             self.send_header('Content-type', MongoServer.mimetypes['json'])
             self.end_headers()
 
-            func(db, collection, args, self.wfile.write)
+            func(args, self.wfile.write, name = name, db = db, collection = collection)
 
             return
         else:
