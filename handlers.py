@@ -103,45 +103,6 @@ class MongoHandler:
 
         out(json.dumps(result, default=json_util.default))
         
-
-    def _dbs(self, db, collection, args, out):
-        """Get a list of databases for a shard.
-
-        This is a GET request, so args is just a dict.
-        """
-
-        connection = self._get_connection('mongos')
-        if connection == None:
-            out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongos"}')
-            return
-
-        cursor = connection.config.databases.find({"primary" : args['server'][0]})
-        result = {"ok" : 1, "dbs" : list(cursor)}
-
-        out(json.dumps(result, default=json_util.default))
-
-
-    def _status(self, db, collection, args, out):
-        """ Get the status of a shard server.
-        This command operated on an individual mongod instance, as opposed to
-        the commands above, which generally operate on the mongos instance.
-
-        This is a GET request, so args is just a dict.
-        """
-        connection = getattr(self, args['server'][0], None)
-
-        if connection == None:
-            (host, port) = self._get_host_and_port(args['server'][0])
-            self._get_connection(args['server'][0], host, port)
-
-        if connection == None:
-            out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongos"}')
-            return
-
-        result = connection[db].command({"serverStatus" : 1}, check=False)
-        if result != None:
-            out(json.dumps(result, default=json_util.default))
-
     def _hello(self, args, out, name = None, db = None, collection = None):
         out('{"ok" : 1, "msg" : "Uh, we had a slight weapons malfunction, but ' + 
             'uh... everything\'s perfectly all right now. We\'re fine. We\'re ' +
@@ -153,6 +114,10 @@ class MongoHandler:
         """
         connect to a mongod
         """
+
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_connect must be a POST request"}')
+            return
 
         host = "localhost"
         port = 27017
@@ -173,6 +138,10 @@ class MongoHandler:
         """
         query the database.
         """
+
+        if type(args).__name__ != 'dict':
+            out('{"ok" : 0, "errmsg" : "_find must be a GET request"}')
+            return
 
         conn = self._get_connection(name)
         if conn == None:
@@ -244,6 +213,10 @@ class MongoHandler:
         Get more results from a cursor
         """
 
+        if type(args).__name__ != 'dict':
+            out('{"ok" : 0, "errmsg" : "_more must be a GET request"}')
+            return
+
         if 'id' not in args:
             out('{"ok" : 0, "errmsg" : "no cursor id given"}')
             return
@@ -286,6 +259,10 @@ class MongoHandler:
         insert a doc
         """
 
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_insert must be a POST request"}')
+            return
+
         conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
@@ -318,6 +295,10 @@ class MongoHandler:
         """
         update a doc
         """
+
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_update must be a POST request"}')
+            return
 
         conn = self._get_connection(name)
         if conn == None:
@@ -366,6 +347,10 @@ class MongoHandler:
         """
         remove docs
         """
+
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_remove must be a POST request"}')
+            return
 
         conn = self._get_connection(name)
         if conn == None:
