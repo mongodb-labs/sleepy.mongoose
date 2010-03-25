@@ -291,6 +291,19 @@ class MongoHandler:
 
         out(json.dumps(result, default=json_util.default))
 
+
+    def __safety_check(self, args, out, db):
+        safe = False
+        if "safe" in args:
+            safe = bool(args.getvalue("safe"));
+
+        if safe:
+            result = db.last_status()
+            out(json.dumps(result, default=json_util.default))
+        else:
+            out('{"ok" : 1}')
+
+
     def _update(self, args, out, name = None, db = None, collection = None):
         """
         update a doc
@@ -333,15 +346,7 @@ class MongoHandler:
 
         conn[db][collection].update(criteria, newobj, upsert=upsert, multi=multi)
 
-        safe = False
-        if "safe" in args:
-            safe = bool(args.getvalue("safe"));
-
-        if safe:
-            result = conn[db].last_status()
-            out(json.dumps(result, default=json_util.default))
-        else:
-            out('{"ok" : 1}')
+        self.__safety_check(args, out, conn[db]);
 
     def _remove(self, args, out, name = None, db = None, collection = None):
         """
@@ -359,7 +364,7 @@ class MongoHandler:
 
         if db == None or collection == None:
             out('{"ok" : 0, "errmsg" : "db and collection must be defined"}')
-            return            
+            return
         
         criteria = {}
         if "criteria" in args:
@@ -367,6 +372,6 @@ class MongoHandler:
             if criteria == None:
                 return
         
-        conn[db][collection].remove(criteria)
-        out('{"ok" : 1}')
+        result = conn[db][collection].remove(criteria)
 
+        self.__safety_check(args, out, conn[db]);

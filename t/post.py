@@ -185,6 +185,42 @@ class TestPOST(unittest.TestCase):
         self.assertEquals(obj['ok'], 1, str)
         self.assertEquals(obj['n'], 3, str)
 
+    def test_remove(self):
+        POST("http://localhost:27080/test/mongoose/_insert",
+             params = {"docs" : '[{"x" : 1},{"x" : 1},{"x" : 1},{"y" : 1}]'},
+             async = False )
+
+        str = POST("http://localhost:27080/test/mongoose/_remove",
+                   async = False )
+
+        obj = json.loads(str)
+
+        self.assertEquals(obj['ok'], 1, str)
+
+
+    def test_remove_safe(self):
+        POST("http://localhost:27080/test/mongoose/_insert",
+             params = {"docs" : '[{"x" : 1},{"x" : 1},{"x" : 1},{"y" : 1}]'},
+             async = False )
+
+        str = POST("http://localhost:27080/test/mongoose/_remove",
+                   params = {"criteria" : '{"x" : 1}', "safe" : 1},
+                   async = False )
+
+        obj = json.loads(str)
+
+        self.assertEquals(obj['ok'], 1, str)
+        self.assertEquals(obj['n'], 3, str)
+
+        str = POST("http://localhost:27080/test/mongoose/_remove",
+                   params = {"safe" : "1"},
+                   async = False )
+
+        obj = json.loads(str)
+
+        self.assertEquals(obj['ok'], 1, str)
+        self.assertEquals(obj['n'], 1, str)
+
 
 if __name__ == '__main__':
     unittest.main()

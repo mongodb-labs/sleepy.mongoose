@@ -238,6 +238,7 @@ Required arguments: none
 Optional arguments:
 
 * `criteria=criteria_for_removal` (object)
+* `safe=bool` (1 or 0)
 
 Returns: `{"ok" : 1}`
 
@@ -246,8 +247,6 @@ Example:
 Remove all documents where the "x" field is 2.
 
     curl --data 'criteria={"x":2}' 'http://localhost:27080/foo/bar/_remove'
-
-TODO: just one, safe mode
 
 #### Commands
 
