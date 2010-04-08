@@ -19,6 +19,8 @@ import os.path
 import urlparse
 import json
 import cgi
+import getopt
+import sys
 
 class MongoServer(BaseHTTPRequestHandler):
 
@@ -33,6 +35,8 @@ class MongoServer(BaseHTTPRequestHandler):
                   "css" : "text/css",
                   "js" : "text/js",
                   "ico" : "image/vnd.microsoft.icon" }
+
+    docroot = "."
 
     def _parse_call(self, uri):
         """ 
@@ -123,9 +127,9 @@ class MongoServer(BaseHTTPRequestHandler):
  
         # serve up a plain file
         if len(type) != 0:
-            if type in MongoServer.mimetypes and os.path.exists(uri):
+            if type in MongoServer.mimetypes and os.path.exists(MongoServer.docroot+uri):
 
-                fh = open(uri, 'r')
+                fh = open(MongoServer.docroot+uri, 'r')
 
                 self.send_response(200, 'OK')
                 self.send_header('Content-type', MongoServer.mimetypes[type])
@@ -177,5 +181,18 @@ class MongoServer(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "d:", ["docroot="])
+
+        for o, a in opts:
+            if o == "-d":
+                if !a.endswith('/'):
+                    a = a+'/'
+                MongoServer.docroot = a
+
+    except getopt.GetoptError:
+        print "error parsing cmd line args."
+        sys.exit(2)
+
     MongoServer.serve_forever(27080)
 

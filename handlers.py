@@ -14,7 +14,7 @@
 
 from pymongo import Connection, json_util, ASCENDING, DESCENDING
 from pymongo.son import SON
-from pymongo.errors import ConnectionFailure, OperationFailure
+from pymongo.errors import ConnectionFailure, OperationFailure, AutoReconnect
 
 import re
 import json
@@ -35,7 +35,7 @@ class MongoHandler:
             port = 27107
 
         try:
-            connection = Connection(host, port)
+            connection = Connection(host = host, port = port, network_timeout = 2)
         except ConnectionFailure:
             return None
 
@@ -86,6 +86,9 @@ class MongoHandler:
 
 
     def _cmd(self, args, out, name = None, db = None, collection = None):
+        if name == None:
+            name = "default"
+
         conn = self._get_connection(name)
         if conn == None:
             out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
@@ -95,7 +98,12 @@ class MongoHandler:
         if cmd == None:
             return
 
-        result = conn[db].command(cmd, check=False)
+        try:
+            result = conn[db].command(cmd, check=False)
+        except AutoReconnect:
+            out('{"ok" : 0, "errmsg" : "wasn\'t connected to the db and '+
+                'couldn\'t reconnect", "name" : "%s"}' % name)
+            return
 
         # debugging
         if result['ok'] == 0:
@@ -129,9 +137,9 @@ class MongoHandler:
 
         conn = self._get_connection(name, host, port)
         if conn != None:
-            out('{"ok" : 1, "host" : "%s", "port" : %d}' % (host, port))
+            out('{"ok" : 1, "host" : "%s", "port" : %d, "name" : "%s"}' % (host, port, name))
         else:
-            out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d}' % (host, port))
+            out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d, "name" : "%s"}' % (host, port, name))
 
 
     def _find(self, args, out, name = None, db = None, collection = None):
@@ -282,7 +290,7 @@ class MongoHandler:
 
         safe = False
         if "safe" in args:
-            safe = bool(args.getvalue("safe"));
+            safe = bool(args.getvalue("safe"))
 
         result = {}
         result['oids'] = conn[db][collection].insert(docs)
@@ -295,7 +303,7 @@ class MongoHandler:
     def __safety_check(self, args, out, db):
         safe = False
         if "safe" in args:
-            safe = bool(args.getvalue("safe"));
+            safe = bool(args.getvalue("safe"))
 
         if safe:
             result = db.last_status()
@@ -346,7 +354,7 @@ class MongoHandler:
 
         conn[db][collection].update(criteria, newobj, upsert=upsert, multi=multi)
 
-        self.__safety_check(args, out, conn[db]);
+        self.__safety_check(args, out, conn[db])
 
     def _remove(self, args, out, name = None, db = None, collection = None):
         """
@@ -374,4 +382,4 @@ class MongoHandler:
         
         result = conn[db][collection].remove(criteria)
 
-        self.__safety_check(args, out, conn[db]);
+        self.__safety_check(args, out, conn[db])
