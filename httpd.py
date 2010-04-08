@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
         for o, a in opts:
             if o == "-d":
-                if !a.endswith('/'):
+                if not a.endswith('/'):
                     a = a+'/'
                 MongoServer.docroot = a
 
