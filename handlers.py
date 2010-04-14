@@ -17,7 +17,10 @@ from pymongo.son import SON
 from pymongo.errors import ConnectionFailure, OperationFailure, AutoReconnect
 
 import re
-import json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 class MongoHandler:
 

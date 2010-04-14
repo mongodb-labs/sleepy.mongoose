@@ -17,10 +17,15 @@ from handlers import MongoHandler
 
 import os.path
 import urlparse
-import json
 import cgi
 import getopt
 import sys
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
 
 class MongoServer(BaseHTTPRequestHandler):
 
