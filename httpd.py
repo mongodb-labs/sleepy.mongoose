@@ -33,7 +33,7 @@ class MongoServer(BaseHTTPRequestHandler):
                   "png" : "image/png",
                   "json" : "text/json",
                   "css" : "text/css",
-                  "js" : "text/js",
+                  "js" : "text/javascript",
                   "ico" : "image/vnd.microsoft.icon" }
 
     docroot = "."
