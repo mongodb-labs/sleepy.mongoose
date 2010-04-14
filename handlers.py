@@ -35,8 +35,11 @@ class MongoHandler:
             port = 27107
 
         try:
+            print "connecting to "+name
             connection = Connection(host = host, port = port, network_timeout = 2)
+            print "connected"
         except ConnectionFailure:
+            print "failed"
             return None
 
         setattr(self, name, connection)
@@ -88,6 +91,7 @@ class MongoHandler:
     def _cmd(self, args, out, name = None, db = None, collection = None):
         if name == None:
             name = "default"
+        print "using conn "+name;
 
         conn = self._get_connection(name)
         if conn == None:
