@@ -185,7 +185,7 @@ if __name__ == "__main__":
         opts, args = getopt.getopt(sys.argv[1:], "d:", ["docroot="])
 
         for o, a in opts:
-            if o == "-d":
+            if o == "-d" or o == "--docroot":
                 if not a.endswith('/'):
                     a = a+'/'
                 MongoServer.docroot = a

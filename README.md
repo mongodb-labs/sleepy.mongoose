@@ -18,6 +18,11 @@ Start the server by running:
 
       $ python httpd.py
 
+Command line flags: 
+
+* `-d` or `--docroot` allows you to specify the location of your files.  Defaults 
+  to this directory.
+
 ## DOCUMENTATION
 
 There is a quick tutorial you can use to get started on 
