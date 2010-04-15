@@ -4,13 +4,19 @@ Sleepy.Mongoose is a REST interface for MongoDB.
 
 ## PREREQUISITES
 
-MongoDB and pymongo.  You can get MongoDB from http://www.mongodb.org.
+You need 3 things installed:
 
-You can install pymongo with easy_install:
+1. MongoDB, which can be downloaded from [http://www.mongodb.org](http://www.mongodb.org).
 
-    $ sudo easy_install pymongo
+2. Pymongo, the MongoDB python driver.  You can install this with easy_install:
 
-Sleepy.Mongoose requires pymongo version 1.4 or greater.
+        $ sudo easy_install pymongo
+
+   Sleepy.Mongoose requires pymongo version 1.4 or greater.
+
+3. The Python JSON package, which can also be installed with easy_install:
+
+        $ sudo easy_install json
 
 ## RUNNING
 
