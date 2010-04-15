@@ -111,6 +111,9 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "wasn\'t connected to the db and '+
                 'couldn\'t reconnect", "name" : "%s"}' % name)
             return
+        except OperationFailure, error:
+            out('{"ok" : 0, "errmsg" : "%s"}' % error)
+            return
 
         # debugging
         if result['ok'] == 0:
