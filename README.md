@@ -6,17 +6,17 @@ Sleepy.Mongoose is a REST interface for MongoDB.
 
 You need 3 things installed:
 
-1. MongoDB, which can be downloaded from [http://www.mongodb.org](http://www.mongodb.org).
+1. MongoDB, which can be downloaded from 
+   [http://www.mongodb.org](http://www.mongodb.org).
 
-2. Pymongo, the MongoDB python driver.  You can install this with easy_install:
+2. Pymongo, the MongoDB python driver.  Sleepy.Mongoose requires pymongo version
+   1.4 or greater.  You can install this with easy_install:
 
         $ sudo easy_install pymongo
 
-   Sleepy.Mongoose requires pymongo version 1.4 or greater.
-
 3. The Python JSON package, which can also be installed with easy_install:
 
-        $ sudo easy_install json
+        $ sudo easy_install python-json
 
 ## RUNNING
 
@@ -49,8 +49,8 @@ You should make sure any options are URL escaped. You can easily do this with
 any JavaScript shell, including the mongo shell.
 
 For example, to query for `{"x" : 1}`, we have the string `'{"x" : 1}'`.  We run
-`escape('{"x" : 1}')` and get `"%7B%22x%22%20%3A%201%7D"`.  We can now paste this beautful
-string into our URL:
+`escape('{"x" : 1}')` and get `"%7B%22x%22%20%3A%201%7D"`.  We can now paste 
+this beautful string into our URL:
 
     http://localhost:27080/website/users/_find?criteria=%7B%22x%22%20%3A%201%7D
 
