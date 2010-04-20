@@ -65,11 +65,11 @@ database servers by labelling each connection.  If no name parameter is passed
 to `_connect`, the connection is labelled `default` and that connection is used
 in subsequent commands (that do not specify a different host).
 
-   curl http://localhost:27080/_connect # connects to localhost:27017 (A)
-   curl --data 'name=backup' http://localhost:27080/_connect # creates another connection (B)
+    curl http://localhost:27080/_connect # connects to localhost:27017 (A)
+    curl --data 'name=backup' http://localhost:27080/_connect # creates another connection (B)
 
-   curl http://localhost:27080/_find # uses A
-   curl http://localhost:27080/_find?name=backup # uses B
+    curl http://localhost:27080/_find # uses A
+    curl http://localhost:27080/_find?name=backup # uses B
 
 ### GET Requests
 
@@ -149,8 +149,8 @@ Get one more result from a cursor.
 
     http://localhost:27080/_connect
 
-Inserts one or more documents into a collection.  No database or collection
-name is necessary.
+Creates a connection to the database server.  No database or collection name is 
+necessary.
 
 If no arguments are given, it tries to connect to "localhost:27017".
 
@@ -300,6 +300,6 @@ Then run:
 
 ## TROUBLESHOOTING
 
-If anything goes wrong, please email the MongoDB user list 
-(http://groups.google.com/group/mongodb-user).
+If anything goes wrong, please email the MongoDB [user list][1].
 
+  [1]: http://groups.google.com/group/mongodb-user
