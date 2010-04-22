@@ -18,6 +18,8 @@ You need 3 things installed:
 
         $ sudo easy_install python-json
 
+Sleepy.Mongoose only works with Python 2.5 and higher.
+
 ## RUNNING
 
 Start the server by running:
