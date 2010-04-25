@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from SocketServer import BaseServer
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from handlers import MongoHandler
+from OpenSSL import SSL
 
-import os.path
+import os.path, socket
 import urlparse
 import cgi
 import getopt
@@ -27,7 +29,25 @@ except ImportError:
     import simplejson as json
 
 
-class MongoServer(BaseHTTPRequestHandler):
+class MongoServer(HTTPServer):
+
+    pem = None
+
+    def __init__(self, server_address, HandlerClass):
+        BaseServer.__init__(self, server_address, HandlerClass)
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
+
+        fpem = MongoServer.pem
+        ctx.use_privatekey_file(fpem)
+        ctx.use_certificate_file(fpem)
+        
+        self.socket = SSL.Connection(ctx, socket.socket(self.address_family,
+                                                        self.socket_type))
+        self.server_bind()
+        self.server_activate()
+
+
+class MongoHTTPRequest(BaseHTTPRequestHandler):
 
     mh = None
 
@@ -80,10 +100,10 @@ class MongoServer(BaseHTTPRequestHandler):
             else:
                 name = args.getvalue("name")
 
-        func = getattr(MongoServer.mh, func_name, None)
+        func = getattr(MongoHTTPRequest.mh, func_name, None)
         if callable(func):
             self.send_response(200, 'OK')
-            self.send_header('Content-type', MongoServer.mimetypes['json'])
+            self.send_header('Content-type', MongoHTTPRequest.mimetypes['json'])
             self.end_headers()
 
             func(args, self.wfile.write, name = name, db = db, collection = collection)
@@ -106,7 +126,7 @@ class MongoServer(BaseHTTPRequestHandler):
                                                  'CONTENT_TYPE':self.headers['Content-Type']})
             else:
                 self.send_response(100, "Continue")
-                self.send_header('Content-type', MongoServer.mimetypes['json'])
+                self.send_header('Content-type', MongoHTTPRequest.mimetypes['json'])
                 self.end_headers()
                 self.wfile.write('{"ok" : 0, "errmsg" : "100-continue msgs not handled yet"}')
 
@@ -132,12 +152,12 @@ class MongoServer(BaseHTTPRequestHandler):
  
         # serve up a plain file
         if len(type) != 0:
-            if type in MongoServer.mimetypes and os.path.exists(MongoServer.docroot+uri):
+            if type in MongoHTTPRequest.mimetypes and os.path.exists(MongoHTTPRequest.docroot+uri):
 
-                fh = open(MongoServer.docroot+uri, 'r')
+                fh = open(MongoHTTPRequest.docroot+uri, 'r')
 
                 self.send_response(200, 'OK')
-                self.send_header('Content-type', MongoServer.mimetypes[type])
+                self.send_header('Content-type', MongoHTTPRequest.mimetypes[type])
                 self.end_headers()
                 self.wfile.write(fh.read())
 
@@ -171,12 +191,16 @@ class MongoServer(BaseHTTPRequestHandler):
         print "\n================================="
         print "|      MongoDB REST Server      |"
         print "=================================\n"
+
+        if MongoServer.pem == None:
+            server = HTTPServer(('', port), MongoHTTPRequest)
+        else:
+            print "--------Secure Connection--------\n"
+            server = MongoServer(('', port), MongoHTTPSRequest)
+
+        MongoHTTPRequest.mh = MongoHandler()
+        
         print "listening for connections on http://localhost:27080\n"
-
-        MongoServer.mh = MongoHandler()
-
-        server = HTTPServer(('', port), MongoServer)
-
         try:
             server.serve_forever()
         except KeyboardInterrupt:
@@ -185,19 +209,34 @@ class MongoServer(BaseHTTPRequestHandler):
             print "\nGood bye!\n"
 
 
+class MongoHTTPSRequest(MongoHTTPRequest):
+    def setup(self):
+        self.connection = self.request
+        self.rfile = socket._fileobject(self.request, "rb", self.rbufsize)
+        self.wfile = socket._fileobject(self.request, "wb", self.wbufsize)
+
+
+def usage():
+    print "python httpd.py [-d docroot/dir] [-s certificate.pem]"
+    print "\t-d|--docroot\tlocation from which to load files"
+    print "\t-s|--secure\tlocation of .pem file if ssl is desired"
+
 if __name__ == "__main__":
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:", ["docroot="])
+        opts, args = getopt.getopt(sys.argv[1:], "d:s:", ["docroot=", "secure="])
 
         for o, a in opts:
             if o == "-d" or o == "--docroot":
                 if not a.endswith('/'):
                     a = a+'/'
-                MongoServer.docroot = a
+                MongoHTTPRequest.docroot = a
+            if o == "-s" or o == "--secure":
+                MongoServer.pem = a
 
     except getopt.GetoptError:
         print "error parsing cmd line args."
+        usage()
         sys.exit(2)
 
-    MongoServer.serve_forever(27080)
-
+    MongoHTTPRequest.serve_forever(27080)
