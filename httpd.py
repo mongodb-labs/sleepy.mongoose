@@ -15,7 +15,11 @@
 from SocketServer import BaseServer
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from handlers import MongoHandler
-from OpenSSL import SSL
+
+try:
+    from OpenSSL import SSL
+except ImportError:
+    pass
 
 import os.path, socket
 import urlparse
@@ -48,8 +52,6 @@ class MongoServer(HTTPServer):
 
 
 class MongoHTTPRequest(BaseHTTPRequestHandler):
-
-    mh = None
 
     mimetypes = { "html" : "text/html",
                   "htm" : "text/html",
@@ -100,7 +102,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             else:
                 name = args.getvalue("name")
 
-        func = getattr(MongoHTTPRequest.mh, func_name, None)
+        func = getattr(MongoHandler.mh, func_name, None)
         if callable(func):
             self.send_response(200, 'OK')
             self.send_header('Content-type', MongoHTTPRequest.mimetypes['json'])
@@ -198,7 +200,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             print "--------Secure Connection--------\n"
             server = MongoServer(('', port), MongoHTTPSRequest)
 
-        MongoHTTPRequest.mh = MongoHandler()
+        MongoHandler.mh = MongoHandler()
         
         print "listening for connections on http://localhost:27080\n"
         try:
@@ -220,6 +222,7 @@ def usage():
     print "python httpd.py [-d docroot/dir] [-s certificate.pem]"
     print "\t-d|--docroot\tlocation from which to load files"
     print "\t-s|--secure\tlocation of .pem file if ssl is desired"
+    print "\t-m|--mongos\tcomma-separated list of mongo servers to connect to"
 
 if __name__ == "__main__":
 
@@ -233,6 +236,8 @@ if __name__ == "__main__":
                 MongoHTTPRequest.docroot = a
             if o == "-s" or o == "--secure":
                 MongoServer.pem = a
+            if o == "-m" or o == "--mongos":
+                MongoServer.mongo = a.split(',')
 
     except getopt.GetoptError:
         print "error parsing cmd line args."

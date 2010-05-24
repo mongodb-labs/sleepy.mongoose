@@ -23,6 +23,7 @@ except ImportError:
     import simplejson as json
 
 class MongoHandler:
+    mh = None
 
     _cursor_id = 0
 
@@ -389,3 +390,79 @@ class MongoHandler:
         result = conn[db][collection].remove(criteria)
 
         self.__safety_check(args, out, conn[db])
+
+    def _batch(self, args, out, name = None, db = None, collection = None):
+        """
+        batch process commands
+        """
+
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_batch must be a POST request"}')
+            return
+
+        requests = self._get_son(args.getvalue('requests'), out)
+        if requests == None:
+            return
+
+        out("[")
+
+        first = True
+        for request in requests:
+            if "cmd" not in request:
+                continue
+
+            cmd = request['cmd']
+            method = "GET"
+            if 'method' in request:
+                method = request['method']
+            print "method? "+method
+            
+            db = None
+            if 'db' in request:
+                db = request['db']
+
+            collection = None
+            if 'collection' in request:
+                collection = request['collection']
+
+            args = {}
+            if 'args' in request:
+                args = request['args']
+
+            if method == "POST":
+                args = MongoFakeFieldStorage(args)
+
+            func = getattr(MongoHandler.mh, cmd, None)
+            if callable(func):
+                output = MongoFakeStream();
+                func(args, output.ostream, name = name, db = db, collection = collection)
+                if not first:
+                    out(",")
+                first = False
+
+                out(output.get_ostream())
+            else:
+                continue
+
+        out("]")
+
+        
+class MongoFakeStream:
+    def __init__(self):
+        self.str = ""
+
+    def ostream(self, content):
+        self.str = self.str + content
+
+    def get_ostream(self):
+        return self.str
+
+class MongoFakeFieldStorage:
+    def __init__(self, args):
+        self.args = args
+
+    def getvalue(self, key):
+        return self.args[key]
+
+    def __contains__(self, key):
+        return key in self.args
