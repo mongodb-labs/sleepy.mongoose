@@ -195,7 +195,14 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
         print "=================================\n"
 
         if MongoServer.pem == None:
-            server = HTTPServer(('', port), MongoHTTPRequest)
+            try:
+                server = HTTPServer(('', port), MongoHTTPRequest)
+            except socket.error, (value, message):
+                if value == 98:
+                    print "could not bind to localhost:%d... is sleepy.mongoose already running?\n" % port
+                else:
+                    print message
+                return
         else:
             print "--------Secure Connection--------\n"
             server = MongoServer(('', port), MongoHTTPSRequest)
