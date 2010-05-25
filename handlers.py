@@ -27,6 +27,17 @@ class MongoHandler:
 
     _cursor_id = 0
 
+    def __init__(self, mongos):
+        for host in mongos:
+            args = MongoFakeFieldStorage({"server" : host})
+
+            out = MongoFakeStream()
+
+            name = host.replace(".", "") 
+            name = name.replace(":", "")
+
+            self._connect(args, out.ostream, name = name)
+        
     def _get_connection(self, name = None, host = None, port = None):
         if name == None:
             name = "default"
@@ -108,7 +119,7 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "wasn\'t connected to the db and '+
                 'couldn\'t reconnect", "name" : "%s"}' % name)
             return
-        except OperationFailure, error:
+        except (OperationFailure, error):
             out('{"ok" : 0, "errmsg" : "%s"}' % error)
             return
 
@@ -262,6 +273,12 @@ class MongoHandler:
         try:
             while len(batch) < batch_size:
                 batch.append(cursor.next())
+        except AutoReconnect:
+            out(json.dumps({"ok" : 0, "errmsg" : "auto reconnecting, please try again"}))
+            return
+        except OperationFailure as of:
+            out(json.dumps({"ok" : 0, "errmsg" : "%s" % of}))
+            return
         except StopIteration:
             # this is so stupid, there's no has_next?
             pass

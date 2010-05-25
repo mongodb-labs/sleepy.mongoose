@@ -64,6 +64,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
                   "ico" : "image/vnd.microsoft.icon" }
 
     docroot = "."
+    mongos = None
 
     def _parse_call(self, uri):
         """ 
@@ -207,7 +208,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             print "--------Secure Connection--------\n"
             server = MongoServer(('', port), MongoHTTPSRequest)
 
-        MongoHandler.mh = MongoHandler()
+        MongoHandler.mh = MongoHandler(MongoHTTPRequest.mongos)
         
         print "listening for connections on http://localhost:27080\n"
         try:
@@ -234,7 +235,7 @@ def usage():
 if __name__ == "__main__":
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:s:", ["docroot=", "secure="])
+        opts, args = getopt.getopt(sys.argv[1:], "d:s:m:", ["docroot=", "secure=", "mongos="])
 
         for o, a in opts:
             if o == "-d" or o == "--docroot":
@@ -244,7 +245,7 @@ if __name__ == "__main__":
             if o == "-s" or o == "--secure":
                 MongoServer.pem = a
             if o == "-m" or o == "--mongos":
-                MongoServer.mongo = a.split(',')
+                MongoHTTPRequest.mongos = a.split(',')
 
     except getopt.GetoptError:
         print "error parsing cmd line args."
@@ -252,3 +253,4 @@ if __name__ == "__main__":
         sys.exit(2)
 
     MongoHTTPRequest.serve_forever(27080)
+
