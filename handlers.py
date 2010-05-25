@@ -28,6 +28,8 @@ class MongoHandler:
     _cursor_id = 0
 
     def __init__(self, mongos):
+        self.connections = {}
+
         for host in mongos:
             args = MongoFakeFieldStorage({"server" : host})
 
@@ -42,9 +44,8 @@ class MongoHandler:
         if name == None:
             name = "default"
 
-        connection = getattr(self, name, None)
-        if connection != None or host == None:
-            return connection
+        if name in self.connections:
+            return self.connections[name]
 
         if port == None:
             port = 27107
@@ -54,7 +55,7 @@ class MongoHandler:
         except ConnectionFailure:
             return None
 
-        setattr(self, name, connection)
+        self.connections[name] = connection
         return connection
 
 
@@ -135,6 +136,13 @@ class MongoHandler:
             'all fine here now, thank you. How are you?"}')
         return
         
+    def _status(self, args, out, name = None, db = None, collection = None):
+        result = {"ok" : 1, "connections" : {}}
+
+        for name, conn in self.connections.iteritems():
+            result['connections'][name] = "%s:%d" % (conn.host, conn.port)
+
+        out(json.dumps(result))
 
     def _connect(self, args, out, name = None, db = None, collection = None):
         """
@@ -453,7 +461,7 @@ class MongoHandler:
 
             func = getattr(MongoHandler.mh, cmd, None)
             if callable(func):
-                output = MongoFakeStream();
+                output = MongoFakeStream()
                 func(args, output.ostream, name = name, db = db, collection = collection)
                 if not first:
                     out(",")

@@ -64,7 +64,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
                   "ico" : "image/vnd.microsoft.icon" }
 
     docroot = "."
-    mongos = None
+    mongos = []
 
     def _parse_call(self, uri):
         """ 
@@ -227,7 +227,7 @@ class MongoHTTPSRequest(MongoHTTPRequest):
 
 
 def usage():
-    print "python httpd.py [-d docroot/dir] [-s certificate.pem]"
+    print "python httpd.py [-d docroot/dir] [-s certificate.pem] [-m list,of,mongods]"
     print "\t-d|--docroot\tlocation from which to load files"
     print "\t-s|--secure\tlocation of .pem file if ssl is desired"
     print "\t-m|--mongos\tcomma-separated list of mongo servers to connect to"
