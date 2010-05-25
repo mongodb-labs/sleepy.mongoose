@@ -415,7 +415,6 @@ class MongoHandler:
             method = "GET"
             if 'method' in request:
                 method = request['method']
-            print "method? "+method
             
             db = None
             if 'db' in request:
@@ -426,8 +425,11 @@ class MongoHandler:
                 collection = request['collection']
 
             args = {}
+            name = None
             if 'args' in request:
                 args = request['args']
+                if 'name' in args:
+                    name = args['name']
 
             if method == "POST":
                 args = MongoFakeFieldStorage(args)
