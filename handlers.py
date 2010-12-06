@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pymongo import Connection, json_util, ASCENDING, DESCENDING
+from pymongo import Connection, ASCENDING, DESCENDING
 from pymongo.son import SON
 from pymongo.errors import ConnectionFailure, OperationFailure, AutoReconnect
+from bson import json_util
 
 import re
 try:
@@ -79,10 +80,19 @@ class MongoHandler:
 
         return (host, port)
 
+    def sm_object_hook(obj):
+        if "$pyhint" in obj:
+            temp = SON()
+            for pair in obj['$pyhint']:
+                temp[pair['key']] = pair['value']
+            return temp
+        else:
+            return json_util.object_hook(obj)
+
 
     def _get_son(self, str, out):
         try:
-            obj = json.loads(str)
+            obj = json.loads(str, object_hook=json_util.object_hook)
         except (ValueError, TypeError):
             out('{"ok" : 0, "errmsg" : "couldn\'t parse json: %s"}' % str)
             return None
@@ -90,14 +100,7 @@ class MongoHandler:
         if getattr(obj, '__iter__', False) == False:
             out('{"ok" : 0, "errmsg" : "type is not iterable: %s"}' % str)
             return None
-            
-        # can't deserialize to an ordered dict!
-        if '$pyhint' in obj:
-            temp = SON()
-            for pair in obj['$pyhint']:
-                temp[pair['key']] = pair['value']
-            obj = temp
-
+ 
         return obj
 
 
