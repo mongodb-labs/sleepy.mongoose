@@ -227,6 +227,9 @@ class MongoHandler:
 
             cursor.sort(stupid_sort)
 
+        if 'explain' in args and bool(args['explain'][0]):
+            out(json.dumps({"results" : [cursor.explain()], "ok" : 1}, default=json_util.default))
+
 
         if not hasattr(self, "cursors"):
             setattr(self, "cursors", {})
