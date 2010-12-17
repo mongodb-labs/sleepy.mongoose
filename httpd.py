@@ -32,6 +32,13 @@ try:
 except ImportError:
     import simplejson as json
 
+# support python 2.5 (parse_qs was moved from cgi to urlparse in python 2.6)
+try:
+    urlparse.parse_qs
+except AttributeError:
+    urlparse.parse_qs = cgi.parse_qs
+
+
 
 class MongoServer(HTTPServer):
 
