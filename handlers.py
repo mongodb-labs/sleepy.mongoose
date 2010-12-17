@@ -290,7 +290,7 @@ class MongoHandler:
         except AutoReconnect:
             out(json.dumps({"ok" : 0, "errmsg" : "auto reconnecting, please try again"}))
             return
-        except OperationFailure as of:
+        except OperationFailure, of:
             out(json.dumps({"ok" : 0, "errmsg" : "%s" % of}))
             return
         except StopIteration:
