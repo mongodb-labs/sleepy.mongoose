@@ -35,9 +35,11 @@ class MongoHandler:
             args = MongoFakeFieldStorage({"server" : host})
 
             out = MongoFakeStream()
-
-            name = host.replace(".", "") 
-            name = name.replace(":", "")
+            if len(mongos) == 1:
+                name = "default"
+            else:
+                name = host.replace(".", "") 
+                name = name.replace(":", "")
 
             self._connect(args, out.ostream, name = name)
         
