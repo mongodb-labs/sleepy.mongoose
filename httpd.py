@@ -72,6 +72,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
 
     docroot = "."
     mongos = []
+    response_headers = []
 
     def _parse_call(self, uri):
         """ 
@@ -80,7 +81,6 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
 
         returns the database, collection, and action
         """
-
         parts = uri.split('/')
 
         # operations always start with _
@@ -114,6 +114,8 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
         if callable(func):
             self.send_response(200, 'OK')
             self.send_header('Content-type', MongoHTTPRequest.mimetypes['json'])
+            for header in self.response_headers:
+                self.send_header(header[0], header[1])
             self.end_headers()
 
             func(args, self.wfile.write, name = name, db = db, collection = collection)
@@ -137,6 +139,8 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             else:
                 self.send_response(100, "Continue")
                 self.send_header('Content-type', MongoHTTPRequest.mimetypes['json'])
+                for header in self.response_headers:
+                    self.send_header(header[0], header[1])
                 self.end_headers()
                 self.wfile.write('{"ok" : 0, "errmsg" : "100-continue msgs not handled yet"}')
 
@@ -168,6 +172,8 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
 
                 self.send_response(200, 'OK')
                 self.send_header('Content-type', MongoHTTPRequest.mimetypes[type])
+                for header in self.response_headers:
+                    self.send_header(header[0], header[1])
                 self.end_headers()
                 self.wfile.write(fh.read())
 
@@ -194,7 +200,6 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
         if uri == None:
             return
         self.call_handler(uri, args)
-
 
     @staticmethod
     def serve_forever(port):
@@ -234,7 +239,8 @@ class MongoHTTPSRequest(MongoHTTPRequest):
 
 
 def usage():
-    print "python httpd.py [-d docroot/dir] [-s certificate.pem] [-m list,of,mongods]"
+    print "python httpd.py [-x] [-d docroot/dir] [-s certificate.pem] [-m list,of,mongods]"
+    print "\t-x|--xorigin\tAllow cross-origin http requests"
     print "\t-d|--docroot\tlocation from which to load files"
     print "\t-s|--secure\tlocation of .pem file if ssl is desired"
     print "\t-m|--mongos\tcomma-separated list of mongo servers to connect to"
@@ -242,7 +248,8 @@ def usage():
 if __name__ == "__main__":
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "d:s:m:", ["docroot=", "secure=", "mongos="])
+        opts, args = getopt.getopt(sys.argv[1:], "xd:s:m:", ["xorigin", "docroot=",
+            "secure=", "mongos="])
 
         for o, a in opts:
             if o == "-d" or o == "--docroot":
@@ -253,6 +260,8 @@ if __name__ == "__main__":
                 MongoServer.pem = a
             if o == "-m" or o == "--mongos":
                 MongoHTTPRequest.mongos = a.split(',')
+            if o == "-x" or o == "--xorigin":
+                MongoHTTPRequest.response_headers.append(("Access-Control-Allow-Origin","*"))
 
     except getopt.GetoptError:
         print "error parsing cmd line args."
