@@ -65,7 +65,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
                   "gif" : "image/gif",
                   "jpg" : "image/jpeg",
                   "png" : "image/png",
-                  "json" : "text/json",
+                  "json" : "application/json",
                   "css" : "text/css",
                   "js" : "text/javascript",
                   "ico" : "image/vnd.microsoft.icon" }
