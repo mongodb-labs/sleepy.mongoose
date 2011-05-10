@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pymongo import Connection, ASCENDING, DESCENDING
+from pymongo import connection, Connection, ASCENDING, DESCENDING
 from pymongo.son import SON
-from pymongo.errors import ConnectionFailure, OperationFailure, AutoReconnect
+from pymongo.errors import ConnectionFailure, ConfigurationError, OperationFailure, AutoReconnect
 from bson import json_util
 
 import re
@@ -43,24 +43,20 @@ class MongoHandler:
 
             self._connect(args, out.ostream, name = name)
         
-    def _get_connection(self, name = None, host = None, port = None):
+    def _get_connection(self, name = None, uri='mongodb://localhost:27017'):
         if name == None:
             name = "default"
 
         if name in self.connections:
             return self.connections[name]
-
-        if port == None:
-            port = 27107
-
+        
         try:
-            connection = Connection(host = host, port = port, network_timeout = 2)
-        except ConnectionFailure:
+            connection = Connection(uri, network_timeout = 2)
+        except (ConnectionFailure, ConfigurationError):
             return None
 
         self.connections[name] = connection
         return connection
-
 
     def _get_host_and_port(self, server):
         host = "localhost"
@@ -148,7 +144,7 @@ class MongoHandler:
             result['connections'][name] = "%s:%d" % (conn.host, conn.port)
 
         out(json.dumps(result))
-
+    
     def _connect(self, args, out, name = None, db = None, collection = None):
         """
         connect to a mongod
@@ -158,21 +154,56 @@ class MongoHandler:
             out('{"ok" : 0, "errmsg" : "_connect must be a POST request"}')
             return
 
-        host = "localhost"
-        port = 27017
         if "server" in args:
-            (host, port) = self._get_host_and_port(args.getvalue('server'))
+            try:
+                uri = args.getvalue('server')
+                info = connection._parse_uri(uri)
+            except Exception, e:
+                print uri
+                print e
+                out('{"ok" : 0, "errmsg" : "invalid server uri given", "server" : "%s"}' % uri)
+                return
+        else:
+            uri = 'mongodb://localhost:27017'
 
         if name == None:
             name = "default"
 
-        conn = self._get_connection(name, host, port)
+        conn = self._get_connection(name, uri)
         if conn != None:
-            out('{"ok" : 1, "host" : "%s", "port" : %d, "name" : "%s"}' % (host, port, name))
+            out('{"ok" : 1, "server" : "%s", "name" : "%s"}' % (uri, name))
         else:
-            out('{"ok" : 0, "errmsg" : "could not connect", "host" : "%s", "port" : %d, "name" : "%s"}' % (host, port, name))
+            out('{"ok" : 0, "errmsg" : "could not connect", "server" : "%s", "name" : "%s"}' % (uri, name))
 
+    def _authenticate(self, args, out, name = None, db = None, collection = None):
+        """
+        authenticate to the database.
+        """
 
+        if type(args).__name__ == 'dict':
+            out('{"ok" : 0, "errmsg" : "_find must be a POST request"}')
+            return
+
+        conn = self._get_connection(name)
+        if conn == None:
+            out('{"ok" : 0, "errmsg" : "couldn\'t get connection to mongo"}')
+            return
+
+        if db == None:
+            out('{"ok" : 0, "errmsg" : "db must be defined"}')
+            return
+
+        if not 'username' in args:
+            out('{"ok" : 0, "errmsg" : "username must be defined"}')
+
+        if not 'password' in args:
+            out('{"ok" : 0, "errmsg" : "password must be defined"}')
+        
+        if not conn[db].authenticate(args.getvalue('username'), args.getvalue('password')):
+            out('{"ok" : 0, "errmsg" : "authentication failed"}')
+        else:
+            out('{"ok" : 1}')
+        
     def _find(self, args, out, name = None, db = None, collection = None):
         """
         query the database.
