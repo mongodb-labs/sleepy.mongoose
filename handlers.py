@@ -234,11 +234,11 @@ class MongoHandler:
             if fields == None:
                 return
 
-        skip = 0
+        limit = 0
         if 'limit' in args:
             limit = int(args['limit'][0])
 
-        limit = 0
+        skip = 0
         if 'skip' in args:
             skip = int(args['skip'][0])
 
