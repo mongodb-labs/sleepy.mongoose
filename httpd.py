@@ -154,7 +154,8 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             uri = "index.html"
 
         (temp, dot, type) = uri.rpartition('.')
-        if len(dot) == 0:
+        # if we have a collection name with a dot, don't use that dot for type
+        if len(dot) == 0 or uri.find('/') != -1:
             type = ""
 
         return (uri, args, type)
