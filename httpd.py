@@ -73,6 +73,7 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
     docroot = "."
     mongos = []
     response_headers = []
+    jsonp_callback = None;
 
     def _parse_call(self, uri):
         """ 
@@ -110,6 +111,13 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
             else:
                 name = args.getvalue("name")
 
+        self.jsonp_callback = None
+        if "callback" in args:
+            if type(args).__name__ == "dict":
+                self.jsonp_callback = args["callback"][0]
+            else:
+                self.jsonp_callback = args.getvalue("callback")
+                
         func = getattr(MongoHandler.mh, func_name, None)
         if callable(func):
             self.send_response(200, 'OK')
@@ -118,14 +126,20 @@ class MongoHTTPRequest(BaseHTTPRequestHandler):
                 self.send_header(header[0], header[1])
             self.end_headers()
 
-            func(args, self.wfile.write, name = name, db = db, collection = collection)
+            if self.jsonp_callback:
+                func(args, self.prependJSONPCallback, name = name, db = db, collection = collection)
+            else:
+                func(args, self.wfile.write, name = name, db = db, collection = collection)
 
             return
         else:
             self.send_error(404, 'Script Not Found: '+uri)
             return            
         
-
+    def prependJSONPCallback(self, str):
+        jsonp_output = '%s(' % self.jsonp_callback + str + ')'
+        self.wfile.write( jsonp_output )
+        
     # TODO: check for ..s
     def process_uri(self, method):
         if method == "GET":
