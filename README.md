@@ -1,1 +1,1 @@
-See [the wiki](http://wiki.github.com/kchodorow/sleepy.mongoose/) for documentation.
+See [the wiki](https://github.com/10gen-labs/sleepy.mongoose/wiki) for documentation.
